@@ -18,9 +18,9 @@ shopsphere-admin/
 
 ## Team Members
 
-- Backend Developer: [Your Name]
-- Frontend Developer 1: [Name]
-- Frontend Developer 2: [Name]
+- Backend Developer: Ankit Shiwakoti
+- Frontend Developer 1: Krisha Gurung
+- Frontend Developer 2: Rupinder Kaur
 
 ## Setup Instructions
 
