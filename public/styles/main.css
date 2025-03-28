@@ -1,0 +1,213 @@
+/* ==========================================================================
+   Design System - ShopSphere Admin Panel
+   ========================================================================== */
+
+/* Color System
+   ========================================================================== */
+:root {
+    /* Brand Colors */
+    --color-primary: #6F48EB;
+    --color-primary-hover: #5a3bc7;
+    
+    /* Neutral Colors */
+    --color-neutral-light: #FAFAFA;
+    
+    /* Text Colors */
+    --color-heading: #262626;
+    --color-body: #4A4A4A;
+    --color-body-light: #717680;
+    
+    /* Status Colors */
+    --color-success: #12B76A;
+    --color-warning: #D92D20;
+    --color-error: #F79009;
+    
+    /* Shadow */
+    --shadow-default: 0 4px 8px rgba(96, 97, 112, 0.16);
+}
+
+/* Typography
+   ========================================================================== */
+body {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-body);
+    background-color: var(--color-neutral-light);
+}
+
+h1, .h1 {
+    font-size: 46px;
+    font-weight: 700;
+    color: var(--color-heading);
+    margin-bottom: 1rem;
+}
+
+h2, .h2 {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--color-heading);
+}
+
+h3, .h3 {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--color-heading);
+}
+
+h4, .h4 {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--color-heading);
+}
+
+.text-body-light {
+    color: var(--color-body-light);
+}
+
+/* Buttons
+   ========================================================================== */
+.btn {
+    height: 55px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+.btn-success {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--color-warning);
+    border-color: var(--color-warning);
+    color: white;
+}
+
+.btn-error {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+/* Cards & Containers
+   ========================================================================== */
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-default);
+}
+
+.auth-container {
+    max-width: 400px;
+    margin: 60px auto;
+    padding: 32px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-default);
+}
+
+.auth-title {
+    text-align: center;
+    color: var(--color-primary);
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+/* Form Elements
+   ========================================================================== */
+.form-label {
+    color: var(--color-heading);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    height: 55px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    padding: 0 16px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(111, 72, 235, 0.1);
+}
+
+/* Alert Messages
+   ========================================================================== */
+.alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.alert-success {
+    background-color: rgba(18, 183, 106, 0.1);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+.alert-warning {
+    background-color: rgba(217, 45, 32, 0.1);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+}
+
+.alert-error {
+    background-color: rgba(247, 144, 9, 0.1);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+/* Navigation
+   ========================================================================== */
+.navbar {
+    background-color: white !important;
+    box-shadow: var(--shadow-default);
+}
+
+.navbar-brand {
+    color: var(--color-heading) !important;
+    font-weight: 600;
+}
+
+.nav-link {
+    color: var(--color-body) !important;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: var(--color-primary) !important;
+}
+
+/* Utilities
+   ========================================================================== */
+.text-primary { color: var(--color-primary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-error { color: var(--color-error) !important; }
+
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-success { background-color: var(--color-success) !important; }
+.bg-warning { background-color: var(--color-warning) !important; }
+.bg-error { background-color: var(--color-error) !important; } 
