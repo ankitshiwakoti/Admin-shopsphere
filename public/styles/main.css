@@ -131,6 +131,68 @@ h4, .h4 {
     font-weight: 500;
 }
 
+/* Auth Pages
+   ========================================================================== */
+.auth-card {
+    border: none !important;
+    box-shadow: var(--shadow-default);
+}
+
+.auth-title {
+    font-size: 46px;
+    color: var(--color-heading);
+    font-weight: bold;
+}
+
+.auth-subtitle {
+    color: var(--color-body-light);
+    font-size: 16px;
+}
+
+.auth-form-label {
+    color: var(--color-heading);
+    font-weight: 500;
+}
+
+.auth-form-input {
+    height: 55px;
+    background-color: var(--color-neutral-light);
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.auth-remember-label {
+    color: var(--color-body-light);
+}
+
+.auth-link {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    color: var(--color-primary-hover);
+}
+
+.auth-button {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    height: 55px;
+    font-size: 16px;
+}
+
+.auth-button:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: white;
+}
+
+.auth-text {
+    color: var(--color-body-light);
+    font-size: 16px;
+}
+
 /* Form Elements
    ========================================================================== */
 .form-label {
@@ -150,7 +212,12 @@ h4, .h4 {
 
 .form-control:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(111, 72, 235, 0.1);
+    box-shadow: 0 0 0 0.25rem rgba(111, 72, 235, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* Alert Messages
@@ -210,4 +277,83 @@ h4, .h4 {
 .bg-primary { background-color: var(--color-primary) !important; }
 .bg-success { background-color: var(--color-success) !important; }
 .bg-warning { background-color: var(--color-warning) !important; }
-.bg-error { background-color: var(--color-error) !important; } 
+.bg-error { background-color: var(--color-error) !important; }
+
+/* Responsive Styles
+   ========================================================================== */
+/* Mobile devices (< 576px) */
+@media (max-width: 575.98px) {
+    .auth-card {
+        margin: 1rem;
+        border-radius: 8px;
+    }
+
+    .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .auth-title {
+        font-size: 32px;
+    }
+
+    .auth-subtitle {
+        font-size: 14px;
+    }
+
+    .auth-form-input {
+        font-size: 14px;
+    }
+
+    .auth-text {
+        font-size: 14px;
+    }
+}
+
+/* Small devices (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .auth-card {
+        margin: 2rem;
+    }
+
+    .auth-title {
+        font-size: 38px;
+    }
+}
+
+/* Medium devices (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .col-md-5 {
+        width: 70%;
+    }
+}
+
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+    .col-md-5 {
+        width: 450px;
+    }
+}
+
+/* Additional responsive utilities */
+.w-sm-100 {
+    width: 100%;
+}
+
+@media (max-width: 575.98px) {
+    .text-sm-center {
+        text-align: center !important;
+    }
+
+    .flex-sm-column {
+        flex-direction: column !important;
+    }
+
+    .mb-sm-3 {
+        margin-bottom: 1rem !important;
+    }
+
+    .w-sm-100 {
+        width: 100% !important;
+    }
+} 
+
