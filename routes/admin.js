@@ -1,34 +1,22 @@
 import express from 'express';
-import { 
-    getLogin, 
-    getSignup, 
-    postSignup, 
-    postLogin, 
-    logout,
-    refreshToken
-} from '../controllers/authController.js';
-import { isAuthenticated, authenticateToken } from '../middleware/auth.js';
+import { isAdmin } from '../middleware/auth.js';
+import * as authController from '../controllers/authController.js';
+import * as adminController from '../controllers/adminController.js';
 
 const router = express.Router();
 
-// Auth routes
-router.get('/login', getLogin);
-router.get('/signup', getSignup);
-router.post('/signup', postSignup);
-router.post('/login', postLogin);
-router.get('/logout', logout);
+// Auth routes (no layout)
+router.get('/login', authController.getLogin);
+router.post('/login', authController.postLogin);
+router.get('/signup', authController.getSignup);
+router.post('/signup', authController.postSignup);
+router.get('/logout', authController.getLogout);
 
-// JWT routes
-router.post('/refresh-token', refreshToken);
-
-// Protected routes
-router.get('/dashboard', isAuthenticated, (req, res) => {
-    res.render('admin/dashboard', { title: 'Admin Dashboard' });
-});
-
-// API routes (protected with JWT)
-router.get('/api/profile', authenticateToken, (req, res) => {
-    res.json({ message: 'Protected route accessed successfully' });
-});
+// Admin routes (with dashboard layout)
+router.get('/dashboard', isAdmin, adminController.getDashboard);
+router.get('/admins', isAdmin, adminController.getAdmins);
+router.post('/admins', isAdmin, adminController.createAdmin);
+router.put('/admins/:id', isAdmin, adminController.updateAdmin);
+router.delete('/admins/:id', isAdmin, adminController.deleteAdmin);
 
 export default router; 
