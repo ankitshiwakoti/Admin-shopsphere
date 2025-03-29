@@ -1,4 +1,5 @@
 import Admin from '../models/Admin.js';
+import { generateTokens, verifyRefreshToken } from '../config/jwt.js';
 
 // Login page
 export const getLogin = (req, res) => {
@@ -88,9 +89,25 @@ export const postLogin = async (req, res) => {
             return res.redirect('/admin/login');
         }
 
+        // Generate JWT tokens
+        const { accessToken, refreshToken } = generateTokens(admin._id);
+
         // Set session
         req.session.adminId = admin._id;
         req.session.isAdmin = true;
+        
+        // Set tokens in cookies
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
         
         req.flash('success_msg', 'Welcome back!');
         res.redirect('/admin/dashboard');
@@ -101,8 +118,49 @@ export const postLogin = async (req, res) => {
     }
 };
 
+// Refresh token
+export const refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (!refreshToken) {
+            return res.status(401).json({ message: 'Refresh token required' });
+        }
+
+        const decoded = verifyRefreshToken(refreshToken);
+        if (!decoded) {
+            return res.status(403).json({ message: 'Invalid or expired refresh token' });
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded.id);
+
+        // Set new tokens in cookies
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({ message: 'Token refreshed successfully' });
+    } catch (error) {
+        console.error('Token refresh error:', error);
+        res.status(500).json({ message: 'Error refreshing token' });
+    }
+};
+
 // Logout handle
 export const logout = (req, res) => {
+    // Clear cookies
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    
+    // Destroy session
     req.session.destroy((err) => {
         if (err) {
             console.error('Logout error:', err);
