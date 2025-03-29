@@ -1,31 +1,203 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="mb-4">Welcome to ShopSphere Admin Dashboard</h1>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Products</h5>
-                        <p class="card-text">Manage your products</p>
-                        <a href="/admin/products" class="btn btn-primary">View Products</a>
+
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+  
+    </div>
+
+
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Products Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Products</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">150</div>
+                            <div class="text-xs text-success mt-2">
+                                <i class="fas fa-arrow-up me-1"></i>12% increase
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Orders</h5>
-                        <p class="card-text">View and manage orders</p>
-                        <a href="/admin/orders" class="btn btn-primary">View Orders</a>
+        </div>
+
+        <!-- Revenue Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">$25,000</div>
+                            <div class="text-xs text-success mt-2">
+                                <i class="fas fa-arrow-up me-1"></i>20% increase
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Users</h5>
-                        <p class="card-text">Manage user accounts</p>
-                        <a href="/admin/users" class="btn btn-primary">View Users</a>
+        </div>
+
+        <!-- Orders Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Orders</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">45</div>
+                            <div class="text-xs text-success mt-2">
+                                <i class="fas fa-arrow-up me-1"></i>8% increase
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Customers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">89</div>
+                            <div class="text-xs text-success mt-2">
+                                <i class="fas fa-arrow-up me-1"></i>15% increase
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-xl-7 col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                    <a href="/admin/orders" class="btn btn-primary btn-sm d-flex align-items-center">
+                        <i class="fas fa-list me-2"></i> View Orders
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th class="px-3 py-3" style="width: 8%">Order ID</th>
+                                    <th class="px-3 py-3" style="width: 18%">Customer</th>
+                                    <th class="px-3 py-3" style="width: 30%">Product</th>
+                                    <th class="px-3 py-3" style="width: 12%">Amount</th>
+                                    <th class="px-3 py-3" style="width: 12%">Status</th>
+                                    <th class="px-3 py-3 text-end" style="width: 20%">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-3 py-3">#2458</td>
+                                    <td class="px-3 py-3">John Doe</td>
+                                    <td class="px-3 py-3">Nike Air Max</td>
+                                    <td class="px-3 py-3">$230</td>
+                                    <td class="px-3 py-3"><span class="alert alert-success py-1 px-2 mb-0">Delivered</span></td>
+                                    <td class="px-3 py-3 text-end">
+                                        <a href="#" class="text-primary me-3">View</a>
+                                        <a href="#" class="text-warning">Edit</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-3">#2457</td>
+                                    <td class="px-3 py-3">Sarah Smith</td>
+                                    <td class="px-3 py-3">Adidas Ultra Boost</td>
+                                    <td class="px-3 py-3">$180</td>
+                                    <td class="px-3 py-3"><span class="alert alert-warning py-1 px-2 mb-0">Processing</span></td>
+                                    <td class="px-3 py-3 text-end">
+                                        <a href="#" class="text-primary me-3">View</a>
+                                        <a href="#" class="text-warning">Edit</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-3">#2456</td>
+                                    <td class="px-3 py-3">Mike Johnson</td>
+                                    <td class="px-3 py-3">Puma RS-X</td>
+                                    <td class="px-3 py-3">$120</td>
+                                    <td class="px-3 py-3"><span class="alert alert-error py-1 px-2 mb-0">Shipped</span></td>
+                                    <td class="px-3 py-3 text-end">
+                                        <a href="#" class="text-primary me-3">View</a>
+                                        <a href="#" class="text-warning">Edit</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Products -->
+        <div class="col-xl-5 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Popular Products</h6>
+                    <a href="/admin/products" class="btn btn-primary btn-sm d-flex align-items-center">
+                        <i class="fas fa-box me-2"></i> View Products
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="product-list">
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-1 text-gray-800">Nike Air Max</h6>
+                                <div class="text-xs text-gray-500">230 sales this month</div>
+                            </div>
+                            <div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">$230</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-1 text-gray-800">Adidas Ultra Boost</h6>
+                                <div class="text-xs text-gray-500">180 sales this month</div>
+                            </div>
+                            <div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">$180</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-1 text-gray-800">Puma RS-X</h6>
+                                <div class="text-xs text-gray-500">120 sales this month</div>
+                            </div>
+                            <div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">$120</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
