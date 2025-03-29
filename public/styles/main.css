@@ -11,11 +11,13 @@
     
     /* Neutral Colors */
     --color-neutral-light: #FAFAFA;
+  
     
     /* Text Colors */
     --color-heading: #262626;
     --color-body: #4A4A4A;
     --color-body-light: #717680;
+    --color-body-light-2: #a5a5a5;
     
     /* Status Colors */
     --color-success: #12B76A;
@@ -24,6 +26,39 @@
     
     /* Shadow */
     --shadow-default: 0 4px 8px rgba(96, 97, 112, 0.16);
+    --shadow-card: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* Logo
+   ========================================================================== */
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.auth-logo-image {
+    width: 200px;
+    height: auto;
+}
+
+.auth-logo {
+    color: var(--color-heading);
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 0;  /* Remove bottom margin since container handles spacing */
+    letter-spacing: -0.5px;
+}
+
+@media (max-width: 575.98px) {
+    .auth-logo {
+        font-size: 1.75rem;
+    }
+    
+    .auth-logo-image {
+        width: 160px;
+    }
 }
 
 /* Typography
@@ -46,24 +81,21 @@ h1, .h1 {
 h2, .h2 {
     font-size: 36px;
     font-weight: 600;
-    color: var(--color-heading);
 }
 
 h3, .h3 {
     font-size: 28px;
     font-weight: 600;
-    color: var(--color-heading);
 }
 
 h4, .h4 {
     font-size: 24px;
     font-weight: 500;
-    color: var(--color-heading);
 }
-h4, .h4 {
+h5, .h5 {
     font-size: 20px;
     font-weight: 400;
-    color: var(--color-heading);
+   
 }
 
 .text-body-light {
@@ -139,14 +171,17 @@ h4, .h4 {
 /* Auth Pages
    ========================================================================== */
 .auth-card {
-    border: none !important;
-    box-shadow: var(--shadow-default);
+    background-color: white !important;
+    border: 1px solid var(--color-neutral-light) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-card);
 }
 
 .auth-title {
-    font-size: 46px;
+    font-size: 28px;
     color: var(--color-heading);
-    font-weight: bold;
+    font-weight: 600;
+    margin-bottom: 0;
 }
 
 .auth-subtitle {
@@ -157,22 +192,38 @@ h4, .h4 {
 .auth-form-label {
     color: var(--color-heading);
     font-weight: 500;
+    font-size: 16px;
+    margin-bottom: 6px;
 }
 
 .auth-form-input {
-    height: 55px;
-    background-color: var(--color-neutral-light);
+    height: 44px;
+    background-color: white;
+    border: 1px solid var(--color-body-light-2);
     border-radius: 8px;
     font-size: 16px;
+    padding: 10px 14px;
+}
+
+.auth-form-input:focus {
+    border-color: var(--color-primary);
+    /* box-shadow: 0 0 0 4px rgba(111, 72, 235, 0.1); */
 }
 
 .auth-remember-label {
-    color: var(--color-body-light);
+    color: var(--color-heading);
+    font-size: 16px;
+}
+
+.form-check-input {
+    border: 1px solid var(--color-body-light);
 }
 
 .auth-link {
     color: var(--color-primary);
     text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
 }
 
 .auth-link:hover {
@@ -183,8 +234,11 @@ h4, .h4 {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    height: 55px;
+    height: 44px;
     font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 10px 18px;
 }
 
 .auth-button:hover {
@@ -194,7 +248,7 @@ h4, .h4 {
 }
 
 .auth-text {
-    color: var(--color-body-light);
+    color: var(--color-body);
     font-size: 16px;
 }
 
@@ -295,10 +349,11 @@ h4, .h4 {
 
     .card-body {
         padding: 1.5rem !important;
+        background-color: #ffffff;
     }
 
     .auth-title {
-        font-size: 32px;
+        font-size: 28px;
     }
 
     .auth-subtitle {
@@ -321,21 +376,28 @@ h4, .h4 {
     }
 
     .auth-title {
-        font-size: 38px;
+        font-size: 30px;
     }
 }
 
 /* Medium devices (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991.98px) {
-    .col-md-5 {
-        width: 70%;
+    .col-md-10 {
+        width: 75%;
     }
 }
 
 /* Large devices (992px and up) */
 @media (min-width: 992px) {
-    .col-md-5 {
-        width: 450px;
+    .col-lg-7 {
+        width: 600px;
+    }
+}
+
+/* Extra large devices (1200px and up) */
+@media (min-width: 1200px) {
+    .col-xl-6 {
+        width: 580px;
     }
 }
 
