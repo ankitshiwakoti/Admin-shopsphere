@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 // Import routes
 import indexRoutes from './routes/index.js';
 import adminRoutes from './routes/admin.js';
+import roleRoutes from './routes/roleRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,7 +23,7 @@ const app = express();
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/shopsphere')
     .then(() => console.log('MongoDB Connected: localhost'))
-    .catch(err => console.log('MongoDB Connection Error:', err));
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(express.json());
@@ -30,19 +31,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // View engine setup
-app.use(expressLayouts);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.set('layout', 'layouts/dashboard'); // Set default layout
+app.use(expressLayouts);
+
+// Set default layout
+app.set('layout', 'layouts/dashboard');
 
 // Session configuration
 app.use(session({
     secret: 'your-secret-key',
-    resave: true,
+    resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Set to true if using HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));
 
@@ -51,12 +53,6 @@ app.use(flash());
 
 // Global variables for flash messages
 app.use((req, res, next) => {
-    console.log('Session:', req.session);
-    console.log('Flash messages:', {
-        success_msg: req.flash('success_msg'),
-        error_msg: req.flash('error_msg'),
-        error: req.flash('error')
-    });
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
@@ -65,20 +61,25 @@ app.use((req, res, next) => {
     next();
 });
 
-// Admin routes with conditional layout
+// Middleware to determine layout for admin routes
 app.use('/admin', (req, res, next) => {
-    console.log('Admin route:', req.path);
-    console.log('Current layout:', res.locals.layout);
-    // Skip dashboard layout for login and signup pages
+    // Skip layout for login and signup pages
     if (req.path === '/login' || req.path === '/signup') {
         res.locals.layout = 'layouts/auth';
-        console.log('Setting auth layout for:', req.path);
+    } else {
+        res.locals.layout = 'layouts/dashboard';
+        // Set path for active menu highlighting
+        res.locals.path = req.path;
     }
     next();
-}, adminRoutes);
+});
 
 // Routes
 app.use('/', indexRoutes);
+app.use('/admin', adminRoutes);
+app.use('/api/roles', roleRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`)); 
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+}); 

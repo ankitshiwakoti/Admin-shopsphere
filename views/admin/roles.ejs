@@ -1,0 +1,219 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Role Management</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+            <i class="fas fa-plus"></i> Create New Role
+        </button>
+    </div>
+
+    <!-- Roles Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Permissions</th>
+                            <th>Assigned Admins</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+                            <% roles.forEach(role => { %>
+                                <tr>
+                                    <td><%= role.name %></td>
+                                    <td><%= role.description || '-' %></td>
+                                    <td><%= role.permissions.join(', ') %></td>
+                                    <td>
+                                        <% if (role.assignedAdmins && role.assignedAdmins.length > 0) { %>
+                                            <span class="badge bg-primary"><%= role.assignedAdmins.length %> admins</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">No admins</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= new Date(role.createdAt).toLocaleDateString() %></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-2" data-bs-toggle="modal" data-bs-target="#viewAdminsModal" data-role-id="<%= role._id %>" data-role-name="<%= role.name %>">
+                                            <i class="fas fa-users"></i> View Admins
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignRolesModal" data-role-id="<%= role._id %>">
+                                            <i class="fas fa-user-plus"></i> Assign
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="text-center">No roles found</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/roles" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="roleName" class="form-label">Role Name</label>
+                        <input type="text" class="form-control" id="roleName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roleDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="roleDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="manage_products" name="permissions" id="manageProducts">
+                            <label class="form-check-label" for="manageProducts">Manage Products</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="manage_orders" name="permissions" id="manageOrders">
+                            <label class="form-check-label" for="manageOrders">Manage Orders</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="manage_customers" name="permissions" id="manageCustomers">
+                            <label class="form-check-label" for="manageCustomers">Manage Customers</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="view_dashboard" name="permissions" id="viewDashboard">
+                            <label class="form-check-label" for="viewDashboard">View Dashboard</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Role</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Roles Modal -->
+<div class="modal fade" id="assignRolesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/roles/assign" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="roleId" id="roleId">
+                    <div class="mb-3">
+                        <label for="adminSelect" class="form-label">Select Admin</label>
+                        <select class="form-select" id="adminSelect" name="adminId" required>
+                            <option value="">Choose an admin...</option>
+                            <% admins.forEach(admin => { %>
+                                <% if (admin.role !== 'superadmin') { %>
+                                    <option value="<%= admin._id %>"><%= admin.username %> (<%= admin.email %>)</option>
+                                <% } %>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign Role</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Admins Modal -->
+<div class="modal fade" id="viewAdminsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assigned Admins</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="assignedAdminsList">
+                    <!-- Admins will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set role ID when opening assign roles modal
+    const assignRolesModal = document.getElementById('assignRolesModal');
+    if (assignRolesModal) {
+        assignRolesModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const roleId = button.getAttribute('data-role-id');
+            document.getElementById('roleId').value = roleId;
+        });
+    }
+
+    // Handle view admins modal
+    const viewAdminsModal = document.getElementById('viewAdminsModal');
+    if (viewAdminsModal) {
+        viewAdminsModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const roleId = button.getAttribute('data-role-id');
+            const roleName = button.getAttribute('data-role-name');
+            
+            // Update modal title
+            this.querySelector('.modal-title').textContent = `Admins with Role: ${roleName}`;
+            
+            // Fetch and display assigned admins
+            fetch(`/admin/roles/${roleId}/admins`)
+                .then(response => response.json())
+                .then(admins => {
+                    const adminsList = document.getElementById('assignedAdminsList');
+                    if (admins.length > 0) {
+                        adminsList.innerHTML = `
+                            <ul class="list-group">
+                                ${admins.map(admin => `
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        ${admin.username} (${admin.email})
+                                        <form action="/admin/roles/remove" method="POST" class="d-inline">
+                                            <input type="hidden" name="roleId" value="${roleId}">
+                                            <input type="hidden" name="adminId" value="${admin._id}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i> Remove
+                                            </button>
+                                        </form>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    } else {
+                        adminsList.innerHTML = '<p class="text-center">No admins assigned to this role</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching assigned admins:', error);
+                    document.getElementById('assignedAdminsList').innerHTML = 
+                        '<p class="text-center text-danger">Error loading assigned admins</p>';
+                });
+        });
+    }
+});
+</script> 
