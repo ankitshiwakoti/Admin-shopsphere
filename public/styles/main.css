@@ -37,38 +37,53 @@
     position: fixed;
     top: 0;
     left: 0;
-    background-color: white;
+    background-color: var(--color-primary);
     box-shadow: var(--shadow-default);
     padding-top: 20px;
     transition: all 0.3s;
     z-index: 1000;
 }
 
+.sidebar-header {
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.sidebar-header img {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+.sidebar-header h4 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
 .sidebar .nav-link {
-    color: var(--color-body);
+    color: white;
     padding: 12px 20px;
     display: flex;
     align-items: center;
+    gap: 10px;
     transition: all 0.3s;
-    border-radius: 8px;
-    margin: 4px 12px;
 }
 
 .sidebar .nav-link:hover {
-    color: var(--color-primary);
-    background-color: rgba(111, 72, 235, 0.1);
+    background-color: var(--color-primary-hover);
+    color: white;
 }
 
 .sidebar .nav-link.active {
-    color: var(--color-primary);
-    background-color: rgba(111, 72, 235, 0.1);
+    background-color: var(--color-primary-hover);
+    color: white;
     font-weight: 500;
 }
 
 .sidebar .nav-link i {
-    margin-right: 12px;
-    font-size: 1.2rem;
-    width: 24px;
+    width: 20px;
     text-align: center;
 }
 
@@ -616,5 +631,92 @@ h5, .h5 {
 
 .toast.info {
     background-color: #0dcaf0 !important;
+}
+
+/* Product List
+   ========================================================================== */
+.product-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.table > :not(caption) > * > * {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--color-heading);
+    background-color: var(--color-neutral-light);
+}
+
+.table td {
+    color: var(--color-body);
+}
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0;
+}
+
+.form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Input Group Styles */
+.input-group-text {
+    border-color: var(--color-body-light-2);
+}
+
+.input-group .form-control:focus {
+    border-color: var(--color-body-light-2);
+    box-shadow: none;
+}
+
+.input-group .form-control:focus + .input-group-text {
+    border-color: var(--color-body-light-2);
+}
+
+/* Pagination Styles */
+.pagination .page-link {
+    color: var(--color-primary);
+    border: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    border-radius: 8px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--color-body-light);
+}
+
+/* Modal Styles */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--color-neutral-light);
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--color-neutral-light);
+    padding: 1.5rem;
 } 
 
