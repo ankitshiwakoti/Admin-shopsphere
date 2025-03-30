@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
+import connectDB from './config/database.js';
 
 // Import routes
 import indexRoutes from './routes/index.js';
@@ -21,9 +22,7 @@ dotenv.config();
 const app = express();
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/shopsphere')
-    .then(() => console.log('MongoDB Connected: localhost'))
-    .catch(err => console.error('MongoDB connection error:', err));
+connectDB();
 
 // Middleware
 app.use(express.json());
