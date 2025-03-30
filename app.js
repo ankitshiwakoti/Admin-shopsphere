@@ -79,6 +79,7 @@ app.use('/admin', (req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/roles', roleRoutes);
+app.use("/admin/products", productRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
