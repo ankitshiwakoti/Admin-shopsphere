@@ -9,10 +9,12 @@ import { dirname } from 'path';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 
+
 // Import routes
 import indexRoutes from './routes/index.js';
 import adminRoutes from './routes/admin.js';
 import roleRoutes from './routes/roleRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
