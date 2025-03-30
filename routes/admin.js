@@ -1,7 +1,9 @@
 import express from 'express';
-import { isAdmin } from '../middleware/auth.js';
+import { isAdmin, isAuthenticated, isSuperAdmin } from '../middleware/auth.js';
 import * as authController from '../controllers/authController.js';
 import * as adminController from '../controllers/adminController.js';
+import * as roleViewController from '../controllers/roleViewController.js';
+import * as roleController from '../controllers/roleController.js';
 
 const router = express.Router();
 
@@ -14,9 +16,19 @@ router.get('/logout', authController.getLogout);
 
 // Admin routes (with dashboard layout)
 router.get('/dashboard', isAdmin, adminController.getDashboard);
+
+// Admin management routes
 router.get('/admins', isAdmin, adminController.getAdmins);
+router.get('/admins/:id/edit', isAdmin, adminController.getEditAdmin);
 router.post('/admins', isAdmin, adminController.createAdmin);
-router.put('/admins/:id', isAdmin, adminController.updateAdmin);
-router.delete('/admins/:id', isAdmin, adminController.deleteAdmin);
+router.post('/admins/:id/update', isAdmin, adminController.updateAdmin);
+router.post('/admins/:id/delete', isAdmin, adminController.deleteAdmin);
+
+// Role management routes
+router.get('/roles', isAuthenticated, isSuperAdmin, roleViewController.getRolesPage);
+router.get('/roles/:roleId/admins', isAuthenticated, isSuperAdmin, roleController.getAssignedAdmins);
+router.post('/roles', isAuthenticated, isSuperAdmin, roleController.createRole);
+router.post('/roles/assign', isAuthenticated, isSuperAdmin, roleController.assignRole);
+router.post('/roles/remove', isAuthenticated, isSuperAdmin, roleController.removeRole);
 
 export default router; 

@@ -52,4 +52,18 @@ export const isAdmin = async (req, res, next) => {
         req.flash('error', 'Error checking admin status');
         res.redirect('/admin/login');
     }
+};
+
+export const isSuperAdmin = (req, res, next) => {
+    if (!req.session.admin) {
+        req.flash('error', 'Please login to access this page');
+        return res.redirect('/admin/login');
+    }
+
+    if (req.session.admin.role !== 'superadmin') {
+        req.flash('error', 'You do not have permission to access this page');
+        return res.redirect('/admin/dashboard');
+    }
+
+    next();
 }; 
