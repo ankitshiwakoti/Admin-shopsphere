@@ -1,0 +1,77 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Edit Product</h1>
+        <a href="/admin/products/manage" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+    </div>
+
+    <!-- Edit Product Form -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form action="/admin/products/<%= product._id %>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_method" value="PATCH">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= product.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3"><%= product.description %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" class="form-control" name="price" step="0.01" value="<%= product.price %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Stock</label>
+                            <input type="number" class="form-control" name="stock" value="<%= product.stock %>" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category" required>
+                                <option value="">Select a category</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>" <%= category._id.toString() === product.category._id.toString() ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Active</option>
+                                <option value="inactive" <%= product.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Images</label>
+                            <input type="file" class="form-control" name="images" multiple accept="image/*">
+                            <% if (product.images && product.images.length > 0) { %>
+                                <div class="mt-2">
+                                    <p>Current Images:</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <% product.images.forEach(image => { %>
+                                            <img src="<%= image %>" alt="Product Image" class="img-thumbnail" style="width: 100px;">
+                                        <% }); %>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Update Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 

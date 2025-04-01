@@ -3,26 +3,54 @@ import mongoose from 'mongoose';
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, 'Product name is required'],
+        trim: true
     },
-    category: {
+    description: {
         type: String,
-        required: true
+        required: [true, 'Product description is required'],
+        trim: true
     },
     price: {
         type: Number,
+        required: [true, 'Product price is required'],
+        min: [0, 'Price cannot be negative']
+    },
+    stock: {
+        type: Number,
+        required: [true, 'Product stock is required'],
+        min: [0, 'Stock cannot be negative']
+    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, 'Product category is required']
+    },
+    images: [{
+        type: String,
+        required: [true, 'At least one product image is required']
+    }],
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
         required: true
     },
-    description: {
-        type: String
+    updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin'
     },
-    image: {
-        type: String // Store image URL
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'active'
     }
+}, {
+    timestamps: true
 });
 
-export default mongoose.model('Product', productSchema);
+// Index for faster queries
+productSchema.index({ name: 'text', description: 'text' });
+productSchema.index({ category: 1 });
+productSchema.index({ status: 1 });
+
+export default mongoose.model('Product', productSchema); 

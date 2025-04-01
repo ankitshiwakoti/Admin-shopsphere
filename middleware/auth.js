@@ -66,4 +66,73 @@ export const isSuperAdmin = (req, res, next) => {
     }
 
     next();
+};
+
+export const protect = async (req, res, next) => {
+    try {
+        if (!req.session.isAdmin) {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized to access this route'
+            });
+        }
+
+        // Get admin from session
+        const admin = await Admin.findById(req.session.adminId).select('-password');
+        if (!admin) {
+            return res.status(401).json({
+                success: false,
+                message: 'Admin not found'
+            });
+        }
+
+        req.admin = admin;
+        next();
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.admin.role)) {
+            return res.status(403).json({
+                success: false,
+                message: `User role ${req.admin.role} is not authorized to access this route`
+            });
+        }
+        next();
+    };
+};
+
+export const checkPermission = (permission) => {
+    return async (req, res, next) => {
+        try {
+            // Super admin bypasses all permission checks
+            if (req.admin.role === 'superadmin') {
+                return next();
+            }
+
+            const admin = await Admin.findById(req.admin._id).populate('roles');
+            const hasPermission = admin.roles.some(role => 
+                role.permissions.includes(permission)
+            );
+
+            if (!hasPermission) {
+                return res.status(403).json({
+                    success: false,
+                    message: `User does not have permission to ${permission}`
+                });
+            }
+            next();
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    };
 }; 

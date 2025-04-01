@@ -1,0 +1,55 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Edit Category</h1>
+        <a href="/admin/categories/manage" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
+    </div>
+
+    <!-- Edit Category Form -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form action="/admin/categories/<%= category._id %>" method="POST">
+                <input type="hidden" name="_method" value="PATCH">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Category Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= category.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3"><%= category.description %></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Parent Category</label>
+                            <select class="form-select" name="parent">
+                                <option value="">None</option>
+                                <% categories.forEach(parent => { %>
+                                    <option value="<%= parent._id %>" <%= category.parent && category.parent._id.toString() === parent._id.toString() ? 'selected' : '' %>>
+                                        <%= parent.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="active" <%= category.status === 'active' ? 'selected' : '' %>>Active</option>
+                                <option value="inactive" <%= category.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 

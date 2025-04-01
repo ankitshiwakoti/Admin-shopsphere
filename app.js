@@ -13,6 +13,8 @@ import connectDB from './config/database.js';
 import indexRoutes from './routes/index.js';
 import adminRoutes from './routes/admin.js';
 import roleRoutes from './routes/roleRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -77,6 +79,17 @@ app.use('/admin', (req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Something went wrong!'
+    });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

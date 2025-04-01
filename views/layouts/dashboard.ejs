@@ -67,6 +67,16 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <%= typeof path !== 'undefined' && path === '/admin/products/manage' ? 'active' : '' %>" href="/admin/products/manage">
+                        <i class="fas fa-box"></i> Product Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof path !== 'undefined' && path === '/admin/categories/manage' ? 'active' : '' %>" href="/admin/categories/manage">
+                        <i class="fas fa-tags"></i> Category Management
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <%= typeof path !== 'undefined' && path === '/admin/products' ? 'active' : '' %>" href="/admin/products">
                         <i class="fas fa-box"></i> Products
                     </a>
