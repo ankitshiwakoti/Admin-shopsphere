@@ -4,8 +4,8 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Admin Management</h1>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
-            <i class="fas fa-plus"></i> Add New Admin
+        <button class="btn btn-primary btn-shadow" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+            <i class="fas fa-plus me-2"></i> Add Admin
         </button>
     </div>
 
@@ -30,15 +30,15 @@
                                 <td><%= admin.role %></td>
                                 <td>
                                     <a href="/admin/admins/<%= admin._id %>/edit" 
-                                       class="btn btn-sm btn-info">
+                                       class="action-icon edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="/admin/admins/<%= admin._id %>/delete" 
                                           method="POST" 
                                           class="d-inline"
                                           onsubmit="return confirm('Are you sure you want to delete this admin?')">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
+                                        <button type="submit" class="action-icon delete border-0">
+                                            <i class="bi bi-trash3"></i>
                                         </button>
                                     </form>
                                 </td>
