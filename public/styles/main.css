@@ -208,6 +208,30 @@ h5, .h5 {
     border-color: var(--color-primary-hover);
 }
 
+.btn-back {
+    
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-heading);
+}
+
+.btn-back:hover {
+    background-color: #F0EFFF;
+    color: var(--color-primary-hover);
+    transition: all 0.3s ease;
+}
+
+.btn-cancel {
+    background-color: #dde0e3;
+    color: var(--color-heading);
+}
+
+.btn-cancel:hover {
+    background-color: #c6c6c6;
+    color: var(--color-heading);
+}
+
+
+
 .btn-success {
     background-color: var(--color-success);
     border-color: var(--color-success);
