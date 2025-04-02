@@ -1,10 +1,10 @@
 <%- contentFor('body') %>
 
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Role Management</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRoleModal">
-            <i class="fas fa-plus"></i> Create New Role
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Role Management</h1>
+        <button class="btn btn-primary btn-shadow" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+            <i class="fas fa-plus me-2"></i>Add Role
         </button>
     </div>
 
@@ -32,18 +32,18 @@
                                     <td><%= role.permissions.join(', ') %></td>
                                     <td>
                                         <% if (role.assignedAdmins && role.assignedAdmins.length > 0) { %>
-                                            <span class="badge bg-primary"><%= role.assignedAdmins.length %> admins</span>
+                                            <span class="alert alert-success py-1 px-2 mb-0"><%= role.assignedAdmins.length %> admins</span>
                                         <% } else { %>
-                                            <span class="badge bg-secondary">No admins</span>
+                                            <span class="alert alert-default py-1 px-2 mb-0">No admins</span>
                                         <% } %>
                                     </td>
                                     <td><%= new Date(role.createdAt).toLocaleDateString() %></td>
                                     <td>
-                                        <button class="btn btn-sm btn-info me-2" data-bs-toggle="modal" data-bs-target="#viewAdminsModal" data-role-id="<%= role._id %>" data-role-name="<%= role.name %>">
-                                            <i class="fas fa-users"></i> View Admins
+                                        <button class="action-icon view" data-bs-toggle="modal" data-bs-target="#viewAdminsModal" data-role-id="<%= role._id %>" data-role-name="<%= role.name %>" title="View Admins">
+                                            <i class="bi bi-eye"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignRolesModal" data-role-id="<%= role._id %>">
-                                            <i class="fas fa-user-plus"></i> Assign
+                                        <button class="action-icon assign" data-bs-toggle="modal" data-bs-target="#assignRolesModal" data-role-id="<%= role._id %>" title="Assign Role">
+                                            <i class="bi bi-person-add"></i>
                                         </button>
                                     </td>
                                 </tr>
