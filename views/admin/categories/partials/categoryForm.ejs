@@ -1,0 +1,32 @@
+<form action="/admin/categories/create" method="POST">
+    <div class="mb-3">
+        <label class="form-label">Category Name</label>
+        <input type="text" class="form-control" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" name="description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Parent Category</label>
+        <select class="form-select" name="parent">
+            <option value="">None</option>
+            <% if (typeof categories !== 'undefined' && categories) { %>
+                <% categories.forEach(cat => { %>
+                    <option value="<%= cat._id %>"><%= cat.name %></option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="status" required>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Category</button>
+    </div>
+</form> 

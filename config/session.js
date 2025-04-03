@@ -13,9 +13,11 @@ const sessionConfig = {
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+        secure: false, // Set to false for development
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+    },
+    name: 'admin.sid' // Custom session name
 };
 
 export default sessionConfig; 
