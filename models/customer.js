@@ -42,5 +42,5 @@ customerSchema.pre('save', function(next) {
     next();
 });
 
-const Customer = mongoose.model('Customer', customerSchema);
-export default Customer; 
+// Check if the model already exists before creating it
+export default mongoose.models.Customer || mongoose.model('Customer', customerSchema); 

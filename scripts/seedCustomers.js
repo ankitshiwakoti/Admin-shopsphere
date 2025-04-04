@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Customer from '../models/customer.js';
+import Customer from '../models/Customer.js';
 import dotenv from 'dotenv';
 import connectDB from '../config/database.js';
 

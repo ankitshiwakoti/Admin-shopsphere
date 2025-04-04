@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #<%= order.orderNumber %></title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-info h1 {
+            color: #2c3e50;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.75rem;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-details h2 {
+            color: #2c3e50;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .invoice-meta {
+            margin-bottom: 0.25rem;
+            color: #6c757d;
+        }
+
+        .addresses {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .address-block {
+            flex: 1;
+            margin-right: 2rem;
+        }
+
+        .address-block:last-child {
+            margin-right: 0;
+        }
+
+        .address-block h3 {
+            color: #2c3e50;
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 2rem;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table tfoot td {
+            border-top: 2px solid #dee2e6;
+            font-weight: 600;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .total-amount {
+            font-size: 1.25rem;
+            color: #2c3e50;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            <div class="company-info">
+                <h1>ShopSphere</h1>
+                <div>123 Commerce Street</div>
+                <div>Business City, ST 12345</div>
+                <div>Phone: (555) 123-4567</div>
+                <div>Email: support@shopsphere.com</div>
+            </div>
+            <div class="invoice-details">
+                <h2>INVOICE</h2>
+                <div class="invoice-meta">Invoice #: <%= order.orderNumber %></div>
+                <div class="invoice-meta">Date: <%= new Date(order.createdAt).toLocaleDateString() %></div>
+                <div class="invoice-meta">Status: <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %></div>
+            </div>
+        </div>
+
+        <!-- Addresses -->
+        <div class="addresses">
+            <div class="address-block">
+                <h3>Bill To</h3>
+                <div><%= order.customer.name %></div>
+                <div><%= order.billingAddress.street %></div>
+                <% if (order.billingAddress.street2) { %>
+                    <div><%= order.billingAddress.street2 %></div>
+                <% } %>
+                <div>
+                    <%= order.billingAddress.city %>, <%= order.billingAddress.state %> <%= order.billingAddress.zipCode %>
+                </div>
+                <div><%= order.billingAddress.country %></div>
+                <div><%= order.customer.email %></div>
+                <div><%= order.customer.phone %></div>
+            </div>
+            <div class="address-block">
+                <h3>Ship To</h3>
+                <div><%= order.customer.name %></div>
+                <div><%= order.shippingAddress.street %></div>
+                <% if (order.shippingAddress.street2) { %>
+                    <div><%= order.shippingAddress.street2 %></div>
+                <% } %>
+                <div>
+                    <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipCode %>
+                </div>
+                <div><%= order.shippingAddress.country %></div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% order.products.forEach(item => { %>
+                    <tr>
+                        <td><%= item.product.name %></td>
+                        <td><%= item.product.sku %></td>
+                        <td class="text-end">$<%= item.price.toFixed(2) %></td>
+                        <td class="text-end"><%= item.quantity %></td>
+                        <td class="text-end">$<%= item.total.toFixed(2) %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end">Subtotal:</td>
+                    <td class="text-end">$<%= order.subtotal.toFixed(2) %></td>
+                </tr>
+                <% if (order.discount > 0) { %>
+                    <tr>
+                        <td colspan="4" class="text-end">Discount:</td>
+                        <td class="text-end">-$<%= order.discount.toFixed(2) %></td>
+                    </tr>
+                <% } %>
+                <tr>
+                    <td colspan="4" class="text-end">Shipping:</td>
+                    <td class="text-end">$<%= order.shippingCost.toFixed(2) %></td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-end">Tax:</td>
+                    <td class="text-end">$<%= order.tax.toFixed(2) %></td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-end">
+                        <strong>Total Amount:</strong>
+                    </td>
+                    <td class="text-end total-amount">
+                        <strong>$<%= order.totalAmount.toFixed(2) %></strong>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Payment Info -->
+        <div class="payment-info">
+            <h3>Payment Information</h3>
+            <div>Payment Method: <%= order.paymentMethod %></div>
+            <div>Payment Status: <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %></div>
+            <% if (order.trackingNumber) { %>
+                <div>Tracking Number: <%= order.trackingNumber %></div>
+            <% } %>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>
+                For any questions about this invoice, please contact<br>
+                support@shopsphere.com or call (555) 123-4567
+            </p>
+        </div>
+
+        <!-- Print Button (visible only on screen) -->
+        <div class="no-print" style="text-align: center; margin-top: 2rem;">
+            <button onclick="window.print()" style="
+                padding: 0.5rem 1rem;
+                background: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1rem;
+            ">
+                Print Invoice
+            </button>
+        </div>
+    </div>
+</body>
+</html> 

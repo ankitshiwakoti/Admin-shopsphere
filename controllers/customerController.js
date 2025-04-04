@@ -1,5 +1,5 @@
-import Customer from '../models/customer.js';
-import Order from '../models/order.js';
+import Customer from '../models/Customer.js';
+import Order from '../models/Order.js';
 
 // Get all customers with their orders
 export const getAllCustomers = async (req, res) => {

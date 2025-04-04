@@ -10,6 +10,7 @@ import * as categoryController from '../controllers/categoryController.js';
 import { upload } from '../middleware/upload.js';
 import * as notificationController from '../controllers/notificationController.js';
 import { getProfile } from '../controllers/activityLogController.js';
+import * as orderController from '../controllers/orderController.js';
 
 const router = express.Router();
 
@@ -70,6 +71,17 @@ router.get('/customers/:id/orders', checkPermission('manage_customers'), custome
 // API routes
 router.put('/customers/:id/status', checkPermission('manage_customers'), customerController.updateCustomerStatus);
 router.put('/orders/:id/status', checkPermission('manage_customers'), customerController.updateOrderStatus);
+
+// ===== ORDER MANAGEMENT ROUTES =====
+// View routes
+router.get('/orders/export', checkPermission('manage_orders'), orderController.exportOrders);
+router.get('/orders', checkPermission('manage_orders'), orderController.renderOrderManagement);
+router.get('/orders/:id/invoice', checkPermission('manage_orders'), orderController.generateInvoice);
+router.get('/orders/:id', checkPermission('manage_orders'), orderController.getOrderDetails);
+
+// API routes
+router.post('/orders/:id/status', checkPermission('manage_orders'), orderController.updateOrderStatus);
+router.post('/orders/:id/cancel', checkPermission('manage_orders'), orderController.cancelOrder);
 
 // ===== ADMIN MANAGEMENT ROUTES (SUPERADMIN ONLY) =====
 router.get('/admins', isSuperAdmin, adminController.getAdmins);
