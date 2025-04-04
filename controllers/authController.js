@@ -17,35 +17,50 @@ export const getLogin = (req, res) => {
 // Handle login
 export const postLogin = async (req, res) => {
     try {
-        console.log('Login attempt:', req.body);
+        console.log('Login attempt:', {
+            email: req.body.email,
+            passwordLength: req.body.password ? req.body.password.length : 0
+        });
+        
         const { email, password } = req.body;
         
         // Validate input
         if (!email || !password) {
-            console.log('Missing credentials:', { email, password });
+            console.log('Missing credentials:', { 
+                hasEmail: !!email, 
+                hasPassword: !!password 
+            });
             req.flash('error_msg', 'Please provide both email and password');
             return res.redirect('/admin/login');
         }
 
-        // Find admin
+        // Find admin and populate roles
         console.log('Looking for admin with email:', email);
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ email }).populate('roles');
         if (!admin) {
             console.log('Admin not found with email:', email);
             req.flash('error_msg', 'Invalid credentials');
             return res.redirect('/admin/login');
         }
-        console.log('Admin found:', { id: admin._id, email: admin.email, role: admin.role });
+        console.log('Admin found:', { 
+            id: admin._id, 
+            email: admin.email, 
+            role: admin.role,
+            hasPassword: !!admin.password,
+            passwordLength: admin.password ? admin.password.length : 0
+        });
 
         // Check password using model's method
-        console.log('Comparing passwords...');
+        console.log('Starting password comparison...');
         const isMatch = await admin.comparePassword(password);
+        console.log('Password comparison result:', isMatch);
+        
         if (!isMatch) {
-            console.log('Password mismatch');
+            console.log('Password mismatch for admin:', email);
             req.flash('error_msg', 'Invalid credentials');
             return res.redirect('/admin/login');
         }
-        console.log('Password matched successfully');
+        console.log('Password matched successfully for admin:', email);
 
         // Set session
         console.log('Setting session...');
@@ -175,4 +190,12 @@ export const refreshToken = async (req, res) => {
         console.error('Token refresh error:', error);
         res.status(500).json({ message: 'Error refreshing token' });
     }
+};
+
+// Handle unauthorized access
+export const getUnauthorized = (req, res) => {
+    res.render('admin/unauthorized', {
+        title: 'Access Denied',
+        error_msg: req.flash('error_msg') || 'You do not have permission to access this page'
+    });
 }; 

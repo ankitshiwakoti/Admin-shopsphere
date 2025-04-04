@@ -1,51 +1,96 @@
 import express from 'express';
-import { isAdmin, isAuthenticated, isSuperAdmin } from '../middleware/auth.js';
+import { protect, checkPermission, isSuperAdmin } from '../middleware/auth.js';
 import * as authController from '../controllers/authController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as roleViewController from '../controllers/roleViewController.js';
 import * as roleController from '../controllers/roleController.js';
 import * as customerController from '../controllers/customerController.js';
+import * as productController from '../controllers/productController.js';
+import * as categoryController from '../controllers/categoryController.js';
 import { upload } from '../middleware/upload.js';
+import * as notificationController from '../controllers/notificationController.js';
 
 const router = express.Router();
 
-// Auth routes (no layout)
+// ===== PUBLIC ROUTES (NO AUTHENTICATION REQUIRED) =====
 router.get('/login', authController.getLogin);
 router.post('/login', authController.postLogin);
 router.get('/signup', authController.getSignup);
 router.post('/signup', authController.postSignup);
 router.get('/logout', authController.getLogout);
 
-// Admin routes (with dashboard layout)
-router.get('/dashboard', isAdmin, adminController.getDashboard);
-router.get('/categories/manage', isAdmin, adminController.getCategoryManagement);
+// ===== PROTECTED ROUTES (AUTHENTICATION REQUIRED) =====
+router.use(protect);
 
-// Admin management routes
-router.get('/admins', isAdmin, adminController.getAdmins);
-router.get('/admins/:id/edit', isAdmin, adminController.getEditAdmin);
-router.post('/admins', isAdmin, adminController.createAdmin);
-router.post('/admins/:id/update', isAdmin, adminController.updateAdmin);
-router.post('/admins/:id/delete', isAdmin, adminController.deleteAdmin);
+// Dashboard
+router.get('/dashboard', checkPermission('view_dashboard'), adminController.getDashboard);
 
-// Role management routes
-router.get('/roles', isAuthenticated, isSuperAdmin, roleViewController.getRolesPage);
-router.get('/roles/:roleId/admins', isAuthenticated, isSuperAdmin, roleController.getAssignedAdmins);
-router.post('/roles', isAuthenticated, isSuperAdmin, roleController.createRole);
-router.post('/roles/assign', isAuthenticated, isSuperAdmin, roleController.assignRole);
-router.post('/roles/remove', isAuthenticated, isSuperAdmin, roleController.removeRole);
+// ===== CATEGORY MANAGEMENT ROUTES =====
+// View routes
+router.get('/categories/manage', checkPermission('manage_categories'), categoryController.renderCategoryManagement);
+router.get('/categories/:id/edit', checkPermission('manage_categories'), categoryController.renderCategoryEdit);
 
-// Category management routes
-router.get('/categories', isAdmin, adminController.getCategoryManagement);
-router.get('/categories/:id/edit', isAdmin, adminController.getCategoryEdit);
-router.post('/categories/create', isAdmin, adminController.createCategory);
-router.post('/categories/:id', isAdmin, adminController.updateCategory);
-router.post('/categories/:id/delete', isAdmin, adminController.deleteCategory);
+// API routes
+router.post('/categories/create', checkPermission('manage_categories'), categoryController.createCategory);
+router.post('/categories/:id', checkPermission('manage_categories'), categoryController.updateCategory);
+router.post('/categories/:id/delete', checkPermission('manage_categories'), categoryController.deleteCategory);
 
-// Customer management routes
-router.get('/customers', isAdmin, customerController.getAllCustomers);
-router.get('/customers/:id', isAdmin, customerController.getCustomerDetails);
-router.put('/customers/:id/status', isAdmin, customerController.updateCustomerStatus);
-router.get('/customers/:id/orders', isAdmin, customerController.getCustomerOrders);
-router.put('/orders/:id/status', isAdmin, customerController.updateOrderStatus);
+// ===== PRODUCT MANAGEMENT ROUTES =====
+// View routes
+router.get('/products/manage', checkPermission('manage_products'), productController.renderProductManagement);
+router.get('/products/create', checkPermission('manage_products'), productController.renderProductCreation);
+router.get('/products/view/:id', checkPermission('manage_products'), productController.getProductDetails);
+router.get('/products/edit/:id', checkPermission('manage_products'), productController.renderProductEdit);
+
+// API routes
+router.post('/products/create', 
+    checkPermission('manage_products'), 
+    upload.array('images', 5), 
+    productController.createProduct
+);
+router.post('/products/edit/:id',
+    checkPermission('manage_products'),
+    upload.array('images', 5),
+    productController.updateProduct
+);
+router.delete('/products/:id', checkPermission('manage_products'), productController.deleteProduct);
+
+// ===== CUSTOMER MANAGEMENT ROUTES =====
+// View routes
+router.get('/customers', checkPermission('manage_customers'), customerController.getAllCustomers);
+router.get('/customers/:id', checkPermission('manage_customers'), customerController.getCustomerDetails);
+router.get('/customers/:id/orders', checkPermission('manage_customers'), customerController.getCustomerOrders);
+
+// API routes
+router.put('/customers/:id/status', checkPermission('manage_customers'), customerController.updateCustomerStatus);
+router.put('/orders/:id/status', checkPermission('manage_customers'), customerController.updateOrderStatus);
+
+// ===== ADMIN MANAGEMENT ROUTES (SUPERADMIN ONLY) =====
+router.get('/admins', isSuperAdmin, adminController.getAdmins);
+router.get('/admins/:id/edit', isSuperAdmin, adminController.getEditAdmin);
+router.post('/admins', isSuperAdmin, adminController.createAdmin);
+router.post('/admins/:id/update', isSuperAdmin, adminController.updateAdmin);
+router.post('/admins/:id/delete', isSuperAdmin, adminController.deleteAdmin);
+
+// ===== ROLE MANAGEMENT ROUTES (SUPERADMIN ONLY) =====
+// View routes
+router.get('/roles', isSuperAdmin, roleViewController.getRolesPage);
+
+// API routes
+router.get('/roles/list', isSuperAdmin, roleController.getRoles);
+router.post('/roles', isSuperAdmin, roleController.createRole);
+router.post('/roles/assign', isSuperAdmin, roleController.assignRole);
+router.post('/roles/remove', isSuperAdmin, roleController.removeRole);
+router.get('/roles/:roleId/admins', isSuperAdmin, roleController.getAssignedAdmins);
+
+// Notification routes
+router.get('/notifications', authMiddleware.isAdmin, notificationController.getNotifications);
+router.post('/notifications', authMiddleware.isAdmin, notificationController.createNotification);
+router.put('/notifications/:id/read', authMiddleware.isAdmin, notificationController.markAsRead);
+router.put('/notifications/read-all', authMiddleware.isAdmin, notificationController.markAllAsRead);
+router.delete('/notifications/:id', authMiddleware.isAdmin, notificationController.deleteNotification);
+
+// ===== ERROR PAGES =====
+router.get('/unauthorized', protect, authController.getUnauthorized);
 
 export default router; 

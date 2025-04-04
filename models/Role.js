@@ -15,9 +15,11 @@ const roleSchema = new mongoose.Schema({
         type: String,
         enum: [
             'manage_products',
+            'manage_categories',
             'manage_orders',
             'manage_customers',
-            'view_dashboard'
+            'view_dashboard',
+            'manage_admins'
         ]
     }],
     assignedAdmins: [{

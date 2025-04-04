@@ -80,16 +80,11 @@ app.use('/admin', (req, res, next) => {
 // Routes
 app.use('/', indexRoutes);
 
-// Admin routes (including product management)
+// Admin routes (consolidated in admin.js)
 app.use('/admin', adminRoutes);
-app.use('/admin/products', productRoutes);
-app.use('/admin/categories', categoryRoutes);
-app.use('/admin/customers', customerRoutes);
 
-// API routes - Comment out the duplicate product routes to avoid conflicts
+// API routes
 app.use('/api/roles', roleRoutes);
-// app.use('/api/products', productRoutes); // Commented out to avoid route conflicts
-app.use('/api/categories', categoryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

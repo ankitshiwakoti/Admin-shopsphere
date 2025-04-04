@@ -26,28 +26,25 @@ router.use(protect);
 
 // Admin view routes - These need to come before API routes to avoid conflicts
 router.get('/manage',
-    authorize('superadmin', 'product_manager'),
     checkPermission('manage_products'),
     renderProductManagement
 );
 
 router.get('/create',
-    authorize('superadmin', 'product_manager'),
     checkPermission('manage_products'),
     renderProductCreation
 );
 
 // Edit product page
 router.get('/edit/:id',
-    authorize('superadmin', 'product_manager'),
     checkPermission('manage_products'),
     renderProductEdit
 );
 
-// Create product - Only Super Admin & Product Manager
+// Create product - Only users with manage_products permission
 // This needs to come before the generic routes to avoid conflicts
 router.post('/create', 
-    authorize('superadmin', 'product_manager'), 
+    checkPermission('manage_products'), 
     upload.array('images', 5), 
     (req, res, next) => {
         console.log('Create product route hit');
@@ -59,9 +56,8 @@ router.post('/create',
     createProduct
 );
 
-// Update product - Only authorized roles
+// Update product - Only users with manage_products permission
 router.post('/edit/:id',
-    authorize('superadmin', 'product_manager'),
     checkPermission('manage_products'),
     upload.array('images', 5),
     updateProduct

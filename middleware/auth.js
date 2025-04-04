@@ -29,53 +29,70 @@ export const authenticateToken = (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
     try {
+        // First check if user is authenticated
         if (!req.session.isAdmin) {
-            req.flash('error', 'Please login to access this page');
+            req.flash('error_msg', 'Please login to access this page');
             return res.redirect('/admin/login');
         }
 
         // Get admin from session
         const admin = await Admin.findById(req.session.adminId);
         if (!admin) {
-            req.flash('error', 'Admin not found');
+            req.flash('error_msg', 'Admin not found');
             return res.redirect('/admin/login');
         }
 
+        // Check if admin has admin or superadmin role
         if (admin.role !== 'admin' && admin.role !== 'superadmin') {
-            req.flash('error', 'You do not have permission to access this page');
-            return res.redirect('/admin/dashboard');
+            req.flash('error_msg', 'You do not have permission to access this page');
+            return res.redirect('/admin/unauthorized');
         }
 
+        // Set admin in request for later use
+        req.admin = admin;
         next();
     } catch (error) {
         console.error('Admin middleware error:', error);
-        req.flash('error', 'Error checking admin status');
+        req.flash('error_msg', 'Error checking admin status');
         res.redirect('/admin/login');
     }
 };
 
-export const isSuperAdmin = (req, res, next) => {
-    if (!req.session.admin) {
-        req.flash('error', 'Please login to access this page');
-        return res.redirect('/admin/login');
-    }
+export const isSuperAdmin = async (req, res, next) => {
+    try {
+        // First check if user is authenticated
+        if (!req.session.isAdmin) {
+            req.flash('error_msg', 'Please login to access this page');
+            return res.redirect('/admin/login');
+        }
 
-    if (req.session.admin.role !== 'superadmin') {
-        req.flash('error', 'You do not have permission to access this page');
-        return res.redirect('/admin/dashboard');
-    }
+        // Get admin from session
+        const admin = await Admin.findById(req.session.adminId);
+        if (!admin) {
+            req.flash('error_msg', 'Admin not found');
+            return res.redirect('/admin/login');
+        }
 
-    next();
+        // Check if admin has superadmin role
+        if (admin.role !== 'superadmin') {
+            req.flash('error_msg', 'You do not have permission to access this page');
+            return res.redirect('/admin/unauthorized');
+        }
+
+        // Set admin in request for later use
+        req.admin = admin;
+        next();
+    } catch (error) {
+        console.error('SuperAdmin middleware error:', error);
+        req.flash('error_msg', 'Error checking superadmin status');
+        res.redirect('/admin/login');
+    }
 };
 
 export const protect = async (req, res, next) => {
     try {
-        console.log('Session data:', req.session);
-        console.log('Is admin?', req.session.isAdmin);
-        console.log('Admin ID:', req.session.adminId);
-        
+        // Check if user is authenticated
         if (!req.session.isAdmin) {
-            console.log('No admin session found');
             // Check if it's an API request
             if (req.path.startsWith('/api/')) {
                 return res.status(401).json({
@@ -91,7 +108,7 @@ export const protect = async (req, res, next) => {
         // Get admin from session
         const admin = await Admin.findById(req.session.adminId).select('-password');
         if (!admin) {
-            console.log('Admin not found in database:', req.session.adminId);
+            // Check if it's an API request
             if (req.path.startsWith('/api/')) {
                 return res.status(401).json({
                     success: false,
@@ -102,7 +119,7 @@ export const protect = async (req, res, next) => {
             return res.redirect('/admin/login');
         }
 
-        console.log('Admin found:', admin.username, 'Role:', admin.role);
+        // Set admin in request for later use
         req.admin = admin;
         next();
     } catch (error) {
@@ -119,14 +136,75 @@ export const protect = async (req, res, next) => {
 };
 
 export const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.admin.role)) {
-            return res.status(403).json({
-                success: false,
-                message: `User role ${req.admin.role} is not authorized to access this route`
-            });
+    return async (req, res, next) => {
+        try {
+            // Super admin bypasses all permission checks
+            if (req.admin.role === 'superadmin') {
+                console.log('Superadmin access granted');
+                return next();
+            }
+            
+            // Check if the admin's role is in the allowed roles
+            if (!roles.includes(req.admin.role)) {
+                console.log(`User role ${req.admin.role} is not authorized to access this route`);
+                if (req.path.startsWith('/api/')) {
+                    return res.status(403).json({
+                        success: false,
+                        message: `User role ${req.admin.role} is not authorized to access this route`
+                    });
+                }
+                req.flash('error_msg', 'You do not have permission to access this page');
+                return res.redirect('/admin/unauthorized');
+            }
+            
+            // Get admin with populated roles
+            const admin = await Admin.findById(req.admin._id).populate('roles');
+            let requiredPermission = null;
+            
+            // Determine required permission based on route
+            if (req.path.startsWith('/admin/products')) {
+                console.log('Checking product permission for path:', req.path);
+                requiredPermission = 'manage_products';
+            } else if (req.path.startsWith('/admin/categories')) {
+                console.log('Checking category permission for path:', req.path);
+                requiredPermission = 'manage_categories';
+            } else if (req.path.startsWith('/admin/customers')) {
+                console.log('Checking customer permission for path:', req.path);
+                requiredPermission = 'manage_customers';
+            }
+            
+            // If a permission check is required
+            if (requiredPermission) {
+                const hasPermission = admin.roles.some(role => 
+                    role.permissions.includes(requiredPermission)
+                );
+                
+                if (!hasPermission) {
+                    console.log(`User does not have ${requiredPermission} permission`);
+                    if (req.path.startsWith('/api/')) {
+                        return res.status(403).json({
+                            success: false,
+                            message: `User does not have permission to ${requiredPermission}`
+                        });
+                    }
+                    req.flash('error_msg', `You do not have permission to ${requiredPermission.replace('_', ' ')}`);
+                    return res.redirect('/admin/unauthorized');
+                }
+                console.log(`${requiredPermission} permission granted`);
+            }
+            
+            next();
+        } catch (error) {
+            console.error('Authorization error:', error);
+            if (req.path.startsWith('/api/')) {
+                return res.status(500).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            req.flash('error_msg', 'An error occurred during authorization');
+            res.redirect('/admin/unauthorized');
         }
-        next();
     };
 };
 
@@ -144,17 +222,25 @@ export const checkPermission = (permission) => {
             );
 
             if (!hasPermission) {
-                return res.status(403).json({
-                    success: false,
-                    message: `User does not have permission to ${permission}`
-                });
+                if (req.xhr || req.headers.accept.includes('application/json')) {
+                    return res.status(403).json({
+                        success: false,
+                        message: `User does not have permission to ${permission}`
+                    });
+                }
+                req.flash('error_msg', `You do not have permission to ${permission.replace('_', ' ')}`);
+                return res.redirect('/admin/unauthorized');
             }
             next();
         } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
+            if (req.xhr || req.headers.accept.includes('application/json')) {
+                return res.status(500).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            req.flash('error_msg', 'An error occurred during permission check');
+            res.redirect('/admin/unauthorized');
         }
     };
 }; 

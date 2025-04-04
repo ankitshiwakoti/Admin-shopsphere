@@ -3,16 +3,7 @@
 <div class="container-fluid px-4 py-3">
     <!-- Page Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-semibold mb-1">Products</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item">Product</li>
-                    <li class="breadcrumb-item active" aria-current="page">List</li>
-                </ol>
-            </nav>
-        </div>
+        
         <a href="/admin/products/create" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>New product
         </a>
@@ -165,8 +156,8 @@
                                             <a href="/admin/products/edit/<%= product._id %>" 
                                                class="btn btn-sm btn-icon btn-outline-primary" 
                                                title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                             <button type="button" 
                                                     class="btn btn-sm btn-icon btn-outline-danger delete-product" 
                                                     data-id="<%= product._id %>"
@@ -191,42 +182,25 @@
                     </tbody>
                 </table>
             </div>
-
+            
             <!-- Table Footer -->
             <div class="d-flex align-items-center justify-content-between p-4 border-top">
-                <div class="text-muted">
-                    <% if (products && products.length > 0) { %>
-                        Showing <span class="fw-semibold">1-<%= Math.min(10, products.length) %></span> of <span class="fw-semibold"><%= products.length %></span> results
-                    <% } else { %>
-                        No results found
-                    <% } %>
-                </div>
-                
                 <div class="d-flex align-items-center gap-3">
                     <select class="form-select w-auto" id="rowsPerPage">
                         <option value="10">10 rows</option>
                         <option value="20">20 rows</option>
                         <option value="50">50 rows</option>
-                        <option value="100">100 rows</option>
                     </select>
                     
-                    <nav>
+                    <nav aria-label="Product table pagination">
                         <ul class="pagination mb-0">
-                            <% if (products && products.length > 0) { %>
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <% if (products.length > 10) { %>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <% } %>
-                                <% if (products.length > 20) { %>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <% } %>
-                                <li class="page-item <%= products.length <= 10 ? 'disabled' : '' %>">
-                                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
-                                </li>
-                            <% } %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -308,6 +282,33 @@
                     <div class="col-md-6">
                         <h5>Attributes</h5>
                         <div id="productAttributes"></div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h5>Product History</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 150px;">Created By:</th>
+                                        <td id="productCreatedBy">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Created At:</th>
+                                        <td id="productCreatedAt">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Updated By:</th>
+                                        <td id="productUpdatedBy">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Updated At:</th>
+                                        <td id="productUpdatedAt">N/A</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -489,7 +490,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalRows = visibleRows.length;
         
         if (totalRows === 0) {
-            document.querySelector('.text-muted').textContent = 'No results found';
             return;
         }
 
@@ -523,13 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const shouldShow = index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage;
             row.element.style.display = shouldShow ? '' : 'none';
         });
-
-        // Update showing text
-        const start = Math.min((currentPage - 1) * rowsPerPage + 1, totalRows);
-        const end = Math.min(currentPage * rowsPerPage, totalRows);
-        document.querySelector('.text-muted').innerHTML = `
-            Showing <span class="fw-semibold">${start}-${end}</span> of <span class="fw-semibold">${totalRows}</span> results
-        `;
 
         // Add click handlers to pagination
         document.querySelectorAll('.page-link').forEach(link => {
@@ -584,28 +577,83 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch Product Details
     function fetchProductDetails(productId) {
-        fetch(`/admin/products/${productId}`)
-            .then(response => response.json())
+        console.log('Fetching product details for ID:', productId);
+        
+        // Log all product IDs in the table for comparison
+        const allProductIds = Array.from(document.querySelectorAll('tr[data-product-id]')).map(row => row.getAttribute('data-product-id'));
+        console.log('All product IDs in table:', allProductIds);
+        console.log('Product ID exists in table:', allProductIds.includes(productId));
+        
+        fetch(`/admin/products/view/${productId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Handle 404 errors specifically
+                if (response.status === 404) {
+                    throw new Error('Product not found');
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
-                    displayProductDetails(data.data);
+                    // Check if the product has the required fields
+                    if (!data.product) {
+                        throw new Error('Product data is missing in the response');
+                    }
+                    
+                    // Ensure the product has the required fields for display
+                    const product = {
+                        ...data.product,
+                        name: data.product.name || 'N/A',
+                        shortDescription: data.product.shortDescription || 'N/A',
+                        description: data.product.description || 'No description available',
+                        price: data.product.price || 0,
+                        stock: data.product.stock || 0,
+                        status: data.product.status || 'draft',
+                        category: data.product.category || { name: 'N/A' },
+                        createdBy: data.product.createdBy || { username: 'N/A', email: 'N/A' },
+                        updatedBy: data.product.updatedBy || { username: 'N/A', email: 'N/A' },
+                        createdAt: data.product.createdAt || new Date(),
+                        updatedAt: data.product.updatedAt || new Date(),
+                        images: data.product.images || [],
+                        specifications: data.product.specifications || [],
+                        attributes: data.product.attributes || { color: [], size: [] }
+                    };
+                    
+                    displayProductDetails(product);
                 } else {
-                    alert('Error fetching product details: ' + data.message);
+                    alert('Error fetching product details: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error fetching product details');
+                if (error.message === 'Product not found') {
+                    alert('Product not found. It may have been deleted or the ID is invalid.');
+                } else {
+                    alert('Error fetching product details: ' + error.message);
+                }
             });
     }
 
     // Display Product Details
     function displayProductDetails(product) {
         // Set basic info
-        document.getElementById('productName').textContent = product.name;
-        document.getElementById('productShortDescription').textContent = product.shortDescription;
-        document.getElementById('productPrice').textContent = product.price.toFixed(2);
-        document.getElementById('productStock').textContent = product.stock;
+        document.getElementById('productName').textContent = product.name || 'N/A';
+        document.getElementById('productShortDescription').textContent = product.shortDescription || 'N/A';
+        document.getElementById('productPrice').textContent = product.price ? product.price.toFixed(2) : '0.00';
+        document.getElementById('productStock').textContent = product.stock || '0';
         document.getElementById('productCategory').textContent = product.category ? product.category.name : 'N/A';
         
         // Set status badge
@@ -628,7 +676,18 @@ document.addEventListener('DOMContentLoaded', function() {
         statusBadge.appendChild(badge);
         
         // Set description
-        document.getElementById('productDescription').innerHTML = product.description;
+        document.getElementById('productDescription').innerHTML = product.description || 'No description available';
+        
+        // Set created/updated info
+        const createdBy = product.createdBy ? `${product.createdBy.username} (${product.createdBy.email})` : 'N/A';
+        const updatedBy = product.updatedBy ? `${product.updatedBy.username} (${product.updatedBy.email})` : 'N/A';
+        const createdAt = product.createdAt ? new Date(product.createdAt).toLocaleString() : 'N/A';
+        const updatedAt = product.updatedAt ? new Date(product.updatedAt).toLocaleString() : 'N/A';
+        
+        document.getElementById('productCreatedBy').textContent = createdBy;
+        document.getElementById('productCreatedAt').textContent = createdAt;
+        document.getElementById('productUpdatedBy').textContent = updatedBy;
+        document.getElementById('productUpdatedAt').textContent = updatedAt;
         
         // Set specifications
         const specsContainer = document.getElementById('productSpecifications');
@@ -641,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const thead = document.createElement('thead');
             thead.innerHTML = `
                 <tr>
-                    <th>Name</th>
+                    <th>Key</th>
                     <th>Value</th>
                 </tr>
             `;
@@ -651,8 +710,8 @@ document.addEventListener('DOMContentLoaded', function() {
             product.specifications.forEach(spec => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${spec.name}</td>
-                    <td>${spec.value}</td>
+                    <td>${spec.key || 'N/A'}</td>
+                    <td>${spec.value || 'N/A'}</td>
                 `;
                 tbody.appendChild(row);
             });

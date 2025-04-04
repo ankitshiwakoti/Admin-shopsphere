@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Order from '../models/order.js';
 import Customer from '../models/customer.js';
-import Product from '../models/product.js';
+import Product from '../models/Product.js';
 import dotenv from 'dotenv';
 import connectDB from '../config/database.js';
 

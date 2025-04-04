@@ -624,128 +624,77 @@
                         <i class="bi bi-list"></i>
                     </button>
 
-                    <!-- Team Selector -->
-                    <button class="team-selector d-flex align-items-center me-3">
-                        <div class="team-avatar">T1</div>
-                        <span>Team 1</span>
-                        <span class="badge ms-2">Free</span>
-                    </button>
-
-                    <!-- Search Bar -->
-                    <div class="navbar-search me-auto">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" class="form-control" placeholder="Search...">
+                    <!-- Left side of navbar -->
+                    <div class="d-flex align-items-center">
+                        <!-- Add any left-side elements here if needed -->
                     </div>
 
-                    <!-- Right Navigation -->
-                    <ul class="navbar-nav align-items-center">
+                    <!-- Right Navigation - Moved to the right side with ms-auto -->
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Keyboard Shortcuts -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="bi bi-command"></i>
-                            </a>
-                        </li>
+                       
 
-                        <div class="navbar-divider"></div>
+                       
 
                         <!-- Notifications -->
                         <li class="nav-item dropdown">
-                            <a href="#" class="nav-link position-relative" data-bs-toggle="dropdown">
+                            <a href="#" class="nav-link position-relative" data-bs-toggle="dropdown" id="notificationDropdown">
                                 <i class="bi bi-bell"></i>
-                                <span class="badge">22</span>
+                                <span class="badge" id="notificationBadge"><%= locals.notifications && notifications.unreadCount > 0 ? notifications.unreadCount : '' %></span>
                             </a>
                             <div class="dropdown-menu notification-dropdown dropdown-menu-end">
                                 <div class="notification-header">
                                     <h6>Notifications</h6>
-                                    <button class="settings-button">
-                                        <i class="bi bi-gear"></i>
+                                    <button class="settings-button" id="markAllReadBtn">
+                                        <i class="bi bi-check-all"></i>
                                     </button>
                                 </div>
                                 <div class="notification-tabs">
-                                    <button class="notification-tab active">
-                                        All <span class="badge">22</span>
+                                    <button class="notification-tab active" data-tab="all">
+                                        All <span class="badge" id="allCount"><%= locals.notifications && notifications.total ? notifications.total : 0 %></span>
                                     </button>
-                                    <button class="notification-tab">
-                                        Unread <span class="badge">12</span>
-                                    </button>
-                                    <button class="notification-tab">
-                                        Archived <span class="badge">10</span>
+                                    <button class="notification-tab" data-tab="unread">
+                                        Unread <span class="badge" id="unreadCount"><%= locals.notifications && notifications.unreadCount ? notifications.unreadCount : 0 %></span>
                                     </button>
                                 </div>
-                                <div class="notification-list">
-                                    <!-- Friend Request Notification -->
-                                    <div class="notification-item">
-                                        <div class="avatar">
-                                            <img src="/images/default-avatar.png" alt="Deja Brady">
-                                        </div>
-                                        <div class="notification-content">
-                                            <p class="notification-text">
-                                                <strong>Deja Brady</strong> sent you a friend request
-                                            </p>
-                                            <div class="notification-meta">
-                                                <span>14 minutes</span>
-                                                <span class="dot"></span>
-                                                <span>Communication</span>
+                                <div class="notification-list" id="notificationList">
+                                    <% if (locals.notifications && notifications.notifications && notifications.notifications.length > 0) { %>
+                                        <% notifications.notifications.forEach(notification => { %>
+                                            <div class="notification-item <%= !notification.readBy.some(read => read.admin._id.toString() === locals.admin._id.toString()) ? 'unread' : '' %>" 
+                                                 data-id="<%= notification._id %>"
+                                                 data-link="<%= notification.link || '#' %>">
+                                                <div class="avatar">
+                                                    <img src="/images/default-avatar.svg" alt="<%= notification.createdBy.username %>">
+                                                </div>
+                                                <div class="notification-content">
+                                                    <p class="notification-text">
+                                                        <strong><%= notification.title %></strong>
+                                                        <%= notification.message %>
+                                                    </p>
+                                                    <div class="notification-meta">
+                                                        <span><%= new Date(notification.createdAt).toLocaleString() %></span>
+                                                        <span class="dot"></span>
+                                                        <span>By <%= notification.createdBy.username %></span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="notification-actions">
-                                                <button class="notification-button primary">Accept</button>
-                                                <button class="notification-button secondary">Decline</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Mention Notification -->
-                                    <div class="notification-item">
-                                        <div class="avatar">
-                                            <img src="/images/default-avatar.png" alt="Jayvon Hull">
-                                        </div>
-                                        <div class="notification-content">
-                                            <p class="notification-text">
-                                                <strong>Jayvon Hull</strong> mentioned you in <strong>Minimal UI</strong>
-                                            </p>
-                                            <div class="notification-meta">
-                                                <span>a day ago</span>
-                                                <span class="dot"></span>
-                                                <span>Project UI</span>
-                                            </div>
-                                            <div class="notification-actions">
-                                                <button class="notification-button primary">Reply</button>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <div class="notification-item">
+                                            <div class="notification-content text-center py-3">
+                                                <p class="notification-text">No notifications</p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- File Upload Notification -->
-                                    <div class="notification-item">
-                                        <div class="avatar">
-                                            <img src="/images/default-avatar.png" alt="Lainey Davidson">
-                                        </div>
-                                        <div class="notification-content">
-                                            <p class="notification-text">
-                                                <strong>Lainey Davidson</strong> added file to <strong>File manager</strong>
-                                            </p>
-                                            <div class="notification-meta">
-                                                <span>2 days ago</span>
-                                                <span class="dot"></span>
-                                                <span>File manager</span>
-                                            </div>
-                                            <div class="notification-actions">
-                                                <button class="notification-button primary">Download</button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <% } %>
                                 </div>
                                 <div class="notification-footer">
-                                    <a href="#">View all</a>
+                                    <a href="/admin/notifications" id="viewAllNotifications">View all</a>
                                 </div>
                             </div>
                         </li>
 
                         <!-- Settings -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="bi bi-gear"></i>
-                            </a>
-                        </li>
+                       
 
                         <!-- User Profile -->
                         <li class="nav-item dropdown">
@@ -758,7 +707,7 @@
                                 <div class="dropdown-header">
                                     <div class="user-info">
                                         <div class="user-avatar">
-                                            <img src="/images/default-avatar.png" alt="User Avatar">
+                                            <img src="/images/default-avatar.svg" alt="User Avatar">
                                             <div class="status-indicator"></div>
                                         </div>
                                         <div class="user-details">
@@ -799,8 +748,8 @@
                                     </a>
                                 </div>
                             </div>
-                                </li>
-                            </ul>
+                        </li>
+                    </ul>
                 </div>
             </nav>
 
@@ -877,6 +826,129 @@
                 delay: 3000
             }));
             toastList.forEach(toast => toast.show());
+
+            // Notification functionality
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationList = document.getElementById('notificationList');
+            const markAllReadBtn = document.getElementById('markAllReadBtn');
+            const notificationTabs = document.querySelectorAll('.notification-tab');
+            const notificationItems = document.querySelectorAll('.notification-item[data-id]');
+            const notificationBadge = document.getElementById('notificationBadge');
+            const allCountBadge = document.getElementById('allCount');
+            const unreadCountBadge = document.getElementById('unreadCount');
+            const viewAllNotifications = document.getElementById('viewAllNotifications');
+
+            // Handle notification item click
+            if (notificationItems.length > 0) {
+                notificationItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const notificationId = this.dataset.id;
+                        const link = this.dataset.link;
+                        
+                        // Mark as read
+                        fetch(`/admin/notifications/${notificationId}/read`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Remove unread class
+                                this.classList.remove('unread');
+                                
+                                // Update unread count
+                                const currentUnreadCount = parseInt(unreadCountBadge.textContent);
+                                if (currentUnreadCount > 0) {
+                                    unreadCountBadge.textContent = currentUnreadCount - 1;
+                                    
+                                    // Update badge
+                                    const currentBadgeCount = parseInt(notificationBadge.textContent);
+                                    if (currentBadgeCount > 0) {
+                                        if (currentBadgeCount === 1) {
+                                            notificationBadge.textContent = '';
+                                        } else {
+                                            notificationBadge.textContent = currentBadgeCount - 1;
+                                        }
+                                    }
+                                }
+                                
+                                // Navigate to the link
+                                if (link && link !== '#') {
+                                    window.location.href = link;
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Error marking notification as read:', error));
+                    });
+                });
+            }
+
+            // Handle mark all as read
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    fetch('/admin/notifications/read-all', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove unread class from all notifications
+                            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                                item.classList.remove('unread');
+                            });
+                            
+                            // Update unread count
+                            unreadCountBadge.textContent = '0';
+                            
+                            // Update badge
+                            notificationBadge.textContent = '';
+                        }
+                    })
+                    .catch(error => console.error('Error marking all notifications as read:', error));
+                });
+            }
+
+            // Handle notification tabs
+            if (notificationTabs.length > 0) {
+                notificationTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs
+                        notificationTabs.forEach(t => t.classList.remove('active'));
+                        
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+                        
+                        const tabType = this.dataset.tab;
+                        
+                        // Show/hide notifications based on tab
+                        if (tabType === 'all') {
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.style.display = '';
+                            });
+                        } else if (tabType === 'unread') {
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.style.display = item.classList.contains('unread') ? '' : 'none';
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Handle view all notifications
+            if (viewAllNotifications) {
+                viewAllNotifications.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/admin/notifications';
+                });
+            }
         });
 
         document.addEventListener('DOMContentLoaded', function () {

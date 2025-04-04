@@ -1,7 +1,8 @@
 import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import Category from '../models/Category.js';
-import Product from '../models/product.js';
+import Product from '../models/Product.js';
+import { notifyAdmins } from './notificationController.js';
 
 // Get admin dashboard
 export const getDashboard = (req, res) => {
@@ -50,26 +51,42 @@ export const createAdmin = async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
         
+        console.log('Creating new admin:', { username, email, role });
+        
         // Check if admin exists
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
+            console.log('Admin already exists with email:', email);
             req.flash('error_msg', 'Email already registered');
             return res.redirect('/admin/admins');
         }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Create admin
+        // Create admin with plain password - the pre-save hook will hash it
         const admin = new Admin({
             username,
             email,
-            password: hashedPassword,
-            role: role || 'admin'
+            password, // Plain password - will be hashed by pre-save hook
+            role: role || 'admin',
+            status: 'active'
         });
 
+        console.log('Saving new admin...');
         await admin.save();
+        console.log('Admin saved successfully:', admin._id);
+        
+        // Verify the password was hashed correctly
+        const savedAdmin = await Admin.findById(admin._id);
+        console.log('Password in database:', savedAdmin.password ? 'Hashed' : 'Not found');
+        
+        // Create notification for other admins
+        await notifyAdmins(
+            'New Admin Created',
+            `${req.session.admin.username} has created a new admin: ${username}`,
+            req.session.admin._id,
+            null,
+            `/admin/admins/${admin._id}`
+        );
+        
         req.flash('success_msg', 'Admin created successfully');
         res.redirect('/admin/admins');
     } catch (error) {
@@ -103,6 +120,16 @@ export const updateAdmin = async (req, res) => {
         }
 
         await admin.save();
+        
+        // Create notification for other admins
+        await notifyAdmins(
+            'Admin Updated',
+            `${req.session.admin.username} has updated admin: ${username}`,
+            req.session.admin._id,
+            null,
+            `/admin/admins/${id}`
+        );
+        
         req.flash('success_msg', 'Admin updated successfully');
         res.redirect('/admin/admins');
     } catch (error) {
@@ -128,7 +155,19 @@ export const deleteAdmin = async (req, res) => {
             return res.redirect('/admin/admins');
         }
 
+        // Get admin details before deletion for notification
+        const adminToDelete = await Admin.findById(id);
+        
+        // Delete the admin
         await Admin.findByIdAndDelete(id);
+        
+        // Create notification for other admins
+        await notifyAdmins(
+            'Admin Deleted',
+            `${req.session.admin.username} has deleted admin: ${adminToDelete.username}`,
+            req.session.admin._id
+        );
+        
         req.flash('success_msg', 'Admin deleted successfully');
         res.redirect('/admin/admins');
     } catch (error) {
@@ -326,25 +365,6 @@ export const deleteProduct = async (req, res) => {
     }
 };
 
-// Get category management page
-export const getCategoryManagement = async (req, res) => {
-    try {
-        const categories = await Category.find()
-            .populate('parent', 'name')
-            .populate('createdBy', 'username')
-            .populate('updatedBy', 'username');
-
-        res.render('admin/categories/manage', {
-            title: 'Category Management',
-            admin: req.session.admin,
-            categories
-        });
-    } catch (error) {
-        req.flash('error', 'Error loading categories');
-        res.redirect('/admin/dashboard');
-    }
-};
-
 export const getCategories = async (req, res) => {
     try {
         const categories = await Category.find()
@@ -357,129 +377,5 @@ export const getCategories = async (req, res) => {
         });
     } catch (error) {
         res.status(500).send('Error loading categories');
-    }
-};
-
-export const getCategoryEdit = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id)
-            .populate('parent', 'name');
-
-        if (!category) {
-            req.flash('error', 'Category not found');
-            return res.redirect('/admin/categories/manage');
-        }
-
-        const categories = await Category.find({ 
-            _id: { $ne: category._id } // Exclude current category from parent options
-        });
-
-        res.render('admin/categories/edit', {
-            title: 'Edit Category',
-            admin: req.session.admin,
-            category,
-            categories
-        });
-    } catch (error) {
-        console.error('Error loading category:', error);
-        req.flash('error', 'Error loading category');
-        res.redirect('/admin/categories/manage');
-    }
-};
-
-export const createCategory = async (req, res) => {
-    try {
-        const { name, description, parent, status } = req.body;
-
-        // Only validate parent if it's not empty
-        if (parent && parent.trim() !== '') {
-            const parentCategory = await Category.findById(parent);
-            if (!parentCategory) {
-                req.flash('error', 'Parent category not found');
-                return res.redirect('/admin/categories/manage');
-            }
-        }
-
-        const category = await Category.create({
-            name,
-            description,
-            parent: parent && parent.trim() !== '' ? parent : null,
-            status: status || 'active',
-            createdBy: req.session.adminId
-        });
-
-        req.flash('success', 'Category created successfully');
-        res.redirect('/admin/categories/manage');
-    } catch (error) {
-        console.error('Error creating category:', error);
-        req.flash('error', error.message);
-        res.redirect('/admin/categories/manage');
-    }
-};
-
-export const updateCategory = async (req, res) => {
-    try {
-        const { name, description, parent, status } = req.body;
-        const category = await Category.findById(req.params.id);
-
-        if (!category) {
-            req.flash('error', 'Category not found');
-            return res.redirect('/admin/categories/manage');
-        }
-
-        // If parent category is being updated, validate it exists
-        if (parent) {
-            const parentCategory = await Category.findById(parent);
-            if (!parentCategory) {
-                req.flash('error', 'Parent category not found');
-                return res.redirect('/admin/categories/manage');
-            }
-        }
-
-        // Update fields
-        category.name = name;
-        category.description = description;
-        category.parent = parent || null;
-        category.status = status;
-        category.updatedBy = req.session.adminId;
-
-        await category.save();
-        req.flash('success', 'Category updated successfully');
-        res.redirect('/admin/categories/manage');
-    } catch (error) {
-        req.flash('error', error.message);
-        res.redirect('/admin/categories/manage');
-    }
-};
-
-export const deleteCategory = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-
-        if (!category) {
-            req.flash('error', 'Category not found');
-            return res.redirect('/admin/categories/manage');
-        }
-
-        // Check if category has products
-        const hasProducts = await Product.exists({ category: category._id });
-        if (hasProducts) {
-            req.flash('error', 'Cannot delete category with associated products');
-            return res.redirect('/admin/categories/manage');
-        }
-
-        // Check if category has child categories
-        const hasChildren = await Category.exists({ parent: category._id });
-        if (hasChildren) {
-            req.flash('error', 'Cannot delete category with child categories');
-            return res.redirect('/admin/categories/manage');
-        }
-
-        await Category.findByIdAndDelete(req.params.id);
-        req.flash('success', 'Category deleted successfully');
-        res.redirect('/admin/categories/manage');
-    } catch (error) {
-        req.flash('error', error.message);
-        res.redirect('/admin/categories/manage');
     }
 }; 

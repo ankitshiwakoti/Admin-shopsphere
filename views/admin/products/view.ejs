@@ -1,0 +1,139 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">View Product</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/admin/products/manage">Products</a></li>
+        <li class="breadcrumb-item active">View Product</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-box me-1"></i>
+            Product Details
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Basic Information</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Name:</th>
+                            <td><%= product.name %></td>
+                        </tr>
+                        <tr>
+                            <th>Category:</th>
+                            <td><%= product.category ? product.category.name : 'N/A' %></td>
+                        </tr>
+                        <tr>
+                            <th>Price:</th>
+                            <td>$<%= product.price.toFixed(2) %></td>
+                        </tr>
+                        <tr>
+                            <th>Stock:</th>
+                            <td><%= product.stock %></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                <span class="badge <%= product.status === 'published' ? 'bg-success' : 'bg-warning' %>">
+                                    <%= product.status %>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4>Product Images</h4>
+                    <div class="row">
+                        <% if (product.images && product.images.length > 0) { %>
+                            <% product.images.forEach(function(image) { %>
+                                <div class="col-md-4 mb-3">
+                                    <img src="<%= image.url %>" class="img-fluid rounded" alt="<%= product.name %>">
+                                    <% if (image.isMain) { %>
+                                        <div class="text-center mt-1">
+                                            <span class="badge bg-primary">Main Image</span>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="col-12">
+                                <p class="text-muted">No images available</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Description</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <%= product.description %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <% if (product.specifications && product.specifications.length > 0) { %>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Specifications</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% product.specifications.forEach(function(spec) { %>
+                                    <tr>
+                                        <td><%= spec.key %></td>
+                                        <td><%= spec.value %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Additional Information</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Created By:</th>
+                            <td><%= product.createdBy ? product.createdBy.name : 'N/A' %></td>
+                        </tr>
+                        <tr>
+                            <th>Created At:</th>
+                            <td><%= new Date(product.createdAt).toLocaleString() %></td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated By:</th>
+                            <td><%= product.updatedBy ? product.updatedBy.name : 'N/A' %></td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated:</th>
+                            <td><%= new Date(product.updatedAt).toLocaleString() %></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="/admin/products/manage" class="btn btn-secondary">Back to Products</a>
+                    <a href="/admin/products/edit/<%= product._id %>" class="btn btn-primary">Edit Product</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %> 
