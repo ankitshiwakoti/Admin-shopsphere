@@ -52,9 +52,11 @@ const notificationSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Create indexes for faster queries
-notificationSchema.index({ recipients: 1, createdAt: -1 });
+// Indexes for better query performance
+notificationSchema.index({ createdBy: 1 });
+notificationSchema.index({ recipients: 1 });
 notificationSchema.index({ 'readBy.admin': 1 });
+notificationSchema.index({ createdAt: -1 });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 

@@ -86,9 +86,9 @@ export const createCategory = async (req, res) => {
         await notifyAdmins(
             'New Category Created',
             `${req.admin.username} has created a new category: ${name}`,
-            req.admin._id,
-            null,
-            `/admin/categories/view/${category._id}`
+            'success',
+            `/admin/categories/view/${category._id}`,
+            req.admin._id
         );
 
         // If it's an AJAX request, return JSON
@@ -204,9 +204,9 @@ export const updateCategory = async (req, res) => {
         await notifyAdmins(
             'Category Updated',
             `${req.admin.username} has updated category: ${name}`,
-            req.admin._id,
-            null,
-            `/admin/categories/view/${category._id}`
+            'info',
+            `/admin/categories/view/${category._id}`,
+            req.admin._id
         );
 
         // If it's an AJAX request, return JSON
@@ -248,25 +248,16 @@ export const deleteCategory = async (req, res) => {
         }
 
         // Check if category has products
-        const hasProducts = await Product.exists({ category: category._id });
-        if (hasProducts) {
+        const productsCount = await Product.countDocuments({ category: category._id });
+        if (productsCount > 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Cannot delete category with associated products'
             });
         }
 
-        // Check if category has child categories
-        const hasChildren = await Category.exists({ parent: category._id });
-        if (hasChildren) {
-            return res.status(400).json({
-                success: false,
-                message: 'Cannot delete category with child categories'
-            });
-        }
-
-        // Get category details before deletion for notification
-        const categoryToDelete = await Category.findById(req.params.id);
+        // Store category name for notification
+        const categoryName = category.name;
 
         // Delete the category
         await Category.findByIdAndDelete(req.params.id);
@@ -274,7 +265,9 @@ export const deleteCategory = async (req, res) => {
         // Create notification for other admins
         await notifyAdmins(
             'Category Deleted',
-            `${req.admin.username} has deleted category: ${categoryToDelete.name}`,
+            `${req.admin.username} has deleted category: ${categoryName}`,
+            'warning',
+            null,
             req.admin._id
         );
 
@@ -292,7 +285,7 @@ export const deleteCategory = async (req, res) => {
     } catch (error) {
         // If it's an AJAX request, return JSON error
         if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-            return res.status(500).json({
+            return res.status(400).json({
                 success: false,
                 message: error.message
             });

@@ -206,20 +206,81 @@ export const deleteNotification = async (req, res) => {
 // Helper function to notify admins
 export const notifyAdmins = async (title, message, type = 'info', link = null, createdBy = null, recipients = [], relatedTo = null) => {
     try {
+        // Find all admins with relevant permissions based on relatedTo
+        let adminsToNotify = [];
+        
+        if (relatedTo) {
+            // Get admins based on their permissions
+            const admins = await Admin.find({}).populate('roles');
+            
+            adminsToNotify = admins.filter(admin => {
+                // Superadmin gets all notifications
+                if (admin.role === 'superadmin') return true;
+                
+                // Check if admin has relevant permissions based on relatedTo
+                if (admin.roles && admin.roles.length > 0) {
+                    return admin.roles.some(role => {
+                        switch(relatedTo) {
+                            case 'product':
+                                return role.permissions.includes('manage_products') || 
+                                       role.permissions.includes('view_products');
+                            case 'category':
+                                return role.permissions.includes('manage_categories') || 
+                                       role.permissions.includes('view_categories');
+                            case 'order':
+                                return role.permissions.includes('manage_orders') || 
+                                       role.permissions.includes('view_orders');
+                            case 'customer':
+                                return role.permissions.includes('manage_customers') || 
+                                       role.permissions.includes('view_customers');
+                            case 'admin':
+                                return role.permissions.includes('manage_admins') || 
+                                       role.permissions.includes('view_admins');
+                            default:
+                                return false;
+                        }
+                    });
+                }
+                return false;
+            });
+        } else {
+            // If no specific relatedTo, include superadmins and specified recipients
+            adminsToNotify = await Admin.find({
+                $or: [
+                    { role: 'superadmin' },
+                    { _id: { $in: recipients } }
+                ]
+            });
+        }
+        
+        // Get unique admin IDs
+        const recipientIds = [...new Set([
+            ...adminsToNotify.map(admin => admin._id),
+            ...recipients
+        ])];
+        
+        // Create notification
         const notification = new Notification({
             title,
             message,
             type,
             link,
-            createdBy,
-            recipients,
+            createdBy: createdBy,
+            recipients: recipientIds,
             relatedTo
         });
-
+        
         await notification.save();
-        return notification;
+        
+        return {
+            success: true,
+            notification
+        };
     } catch (error) {
-        console.error('Error creating admin notification:', error);
-        return null;
+        console.error('Error in notifyAdmins:', error);
+        return {
+            success: false,
+            error: error.message
+        };
     }
 }; 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect, checkPermission, isSuperAdmin } from '../middleware/auth.js';
+import { protect, checkPermission, isSuperAdmin, isAdmin } from '../middleware/auth.js';
 import * as authController from '../controllers/authController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as roleViewController from '../controllers/roleViewController.js';
@@ -9,12 +9,13 @@ import * as productController from '../controllers/productController.js';
 import * as categoryController from '../controllers/categoryController.js';
 import { upload } from '../middleware/upload.js';
 import * as notificationController from '../controllers/notificationController.js';
+import { getProfile } from '../controllers/activityLogController.js';
 
 const router = express.Router();
 
 // ===== PUBLIC ROUTES (NO AUTHENTICATION REQUIRED) =====
 router.get('/login', authController.getLogin);
-router.post('/login', authController.postLogin);
+router.post('/login', authController.login);
 router.get('/signup', authController.getSignup);
 router.post('/signup', authController.postSignup);
 router.get('/logout', authController.getLogout);
@@ -24,6 +25,11 @@ router.use(protect);
 
 // Dashboard
 router.get('/dashboard', checkPermission('view_dashboard'), adminController.getDashboard);
+
+// Profile routes
+router.get('/profile', isAdmin, getProfile);
+router.post('/profile/update', isAdmin, adminController.updateProfile);
+router.post('/profile/change-password', isAdmin, adminController.changePassword);
 
 // ===== CATEGORY MANAGEMENT ROUTES =====
 // View routes
@@ -53,7 +59,7 @@ router.post('/products/edit/:id',
     upload.array('images', 5),
     productController.updateProduct
 );
-router.delete('/products/:id', checkPermission('manage_products'), productController.deleteProduct);
+router.post('/products/:id/delete', checkPermission('manage_products'), productController.deleteProduct);
 
 // ===== CUSTOMER MANAGEMENT ROUTES =====
 // View routes
@@ -84,11 +90,11 @@ router.post('/roles/remove', isSuperAdmin, roleController.removeRole);
 router.get('/roles/:roleId/admins', isSuperAdmin, roleController.getAssignedAdmins);
 
 // Notification routes
-router.get('/notifications', authMiddleware.isAdmin, notificationController.getNotifications);
-router.post('/notifications', authMiddleware.isAdmin, notificationController.createNotification);
-router.put('/notifications/:id/read', authMiddleware.isAdmin, notificationController.markAsRead);
-router.put('/notifications/read-all', authMiddleware.isAdmin, notificationController.markAllAsRead);
-router.delete('/notifications/:id', authMiddleware.isAdmin, notificationController.deleteNotification);
+router.get('/notifications', isAdmin, notificationController.getNotifications);
+router.post('/notifications', isAdmin, notificationController.createNotification);
+router.put('/notifications/:id/read', isAdmin, notificationController.markAsRead);
+router.put('/notifications/read-all', isAdmin, notificationController.markAllAsRead);
+router.delete('/notifications/:id', isAdmin, notificationController.deleteNotification);
 
 // ===== ERROR PAGES =====
 router.get('/unauthorized', protect, authController.getUnauthorized);

@@ -806,15 +806,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Delete Product
     function deleteProduct(productId) {
-        fetch(`/admin/products/${productId}`, {
-            method: 'DELETE',
+        fetch(`/admin/products/${productId}/delete`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+            return response.json();
+        })
         .then(data => {
-            if (data.success) {
+            if (data && data.success) {
                 // Close modal
                 const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
                 deleteModal.hide();
@@ -824,8 +830,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Reload page
                 window.location.reload();
-            } else {
-                alert('Error deleting product: ' + data.message);
+            } else if (data && !data.success) {
+                alert('Error deleting product: ' + data.error);
             }
         })
         .catch(error => {

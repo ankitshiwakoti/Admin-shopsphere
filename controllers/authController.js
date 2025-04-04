@@ -4,90 +4,61 @@ import { generateTokens, verifyRefreshToken } from '../config/jwt.js';
 
 // Login page
 export const getLogin = (req, res) => {
-    // If already logged in, redirect to dashboard
-    if (req.session.isAdmin) {
-        return res.redirect('/admin/dashboard');
-    }
-
     res.render('admin/login', {
-        title: 'Admin Login'
+        title: 'Admin Login',
+        path: '/admin/login'
     });
 };
 
 // Handle login
-export const postLogin = async (req, res) => {
+export const login = async (req, res) => {
     try {
-        console.log('Login attempt:', {
-            email: req.body.email,
-            passwordLength: req.body.password ? req.body.password.length : 0
-        });
-        
         const { email, password } = req.body;
-        
-        // Validate input
-        if (!email || !password) {
-            console.log('Missing credentials:', { 
-                hasEmail: !!email, 
-                hasPassword: !!password 
-            });
-            req.flash('error_msg', 'Please provide both email and password');
-            return res.redirect('/admin/login');
-        }
+        console.log('Login attempt with email:', email, 'password length:', password?.length);
 
-        // Find admin and populate roles
-        console.log('Looking for admin with email:', email);
-        const admin = await Admin.findOne({ email }).populate('roles');
+        // Find admin by email
+        const admin = await Admin.findOne({ email });
         if (!admin) {
             console.log('Admin not found with email:', email);
-            req.flash('error_msg', 'Invalid credentials');
+            req.flash('error_msg', 'Invalid email or password');
             return res.redirect('/admin/login');
         }
-        console.log('Admin found:', { 
-            id: admin._id, 
-            email: admin.email, 
-            role: admin.role,
-            hasPassword: !!admin.password,
-            passwordLength: admin.password ? admin.password.length : 0
-        });
 
-        // Check password using model's method
-        console.log('Starting password comparison...');
+        console.log('Admin found:', admin.email);
+
+        // Compare password
         const isMatch = await admin.comparePassword(password);
-        console.log('Password comparison result:', isMatch);
-        
-        if (!isMatch) {
-            console.log('Password mismatch for admin:', email);
-            req.flash('error_msg', 'Invalid credentials');
-            return res.redirect('/admin/login');
+        console.log('Password match result:', isMatch);
+
+        if (isMatch) {
+            // Set session
+            req.session.isAdmin = true;
+            req.session.adminId = admin._id;
+            req.session.admin = {
+                id: admin._id,
+                username: admin.username,
+                email: admin.email,
+                role: admin.role
+            };
+            console.log('Session set:', req.session);
+
+            // Save session before redirect
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Error saving session:', err);
+                    req.flash('error_msg', 'Error during login');
+                    return res.redirect('/admin/login');
+                }
+                res.redirect('/admin/dashboard');
+            });
+        } else {
+            console.log('Password does not match');
+            req.flash('error_msg', 'Invalid email or password');
+            res.redirect('/admin/login');
         }
-        console.log('Password matched successfully for admin:', email);
-
-        // Set session
-        console.log('Setting session...');
-        req.session.adminId = admin._id;
-        req.session.isAdmin = true;
-        req.session.admin = {
-            id: admin._id,
-            username: admin.username,
-            email: admin.email,
-            role: admin.role
-        };
-        console.log('Session set:', req.session);
-
-        // Save session before redirect
-        req.session.save((err) => {
-            if (err) {
-                console.error('Session save error:', err);
-                req.flash('error_msg', 'An error occurred during login');
-                return res.redirect('/admin/login');
-            }
-            console.log('Session saved successfully');
-            req.flash('success_msg', 'Welcome back!');
-            res.redirect('/admin/dashboard');
-        });
     } catch (error) {
-        console.error('Login error:', error);
-        req.flash('error_msg', 'An error occurred during login');
+        console.error('Error during login:', error);
+        req.flash('error_msg', 'Error during login');
         res.redirect('/admin/login');
     }
 };

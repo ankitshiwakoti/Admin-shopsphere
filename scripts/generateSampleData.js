@@ -1,8 +1,11 @@
-const mongoose = require('mongoose');
-const Customer = require('../models/customer');
-const Order = require('../models/order');
-const Product = require('../models/product');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import Customer from '../models/Customer.js';
+import Order from '../models/Order.js';
+import Product from '../models/Product.js';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -52,7 +55,7 @@ const sampleCustomers = [
     }
 ];
 
-async function generateSampleData() {
+const generateSampleData = async () => {
     try {
         // Clear existing data
         await Customer.deleteMany({});
@@ -112,6 +115,6 @@ async function generateSampleData() {
         console.error('Error generating sample data:', error);
         process.exit(1);
     }
-}
+};
 
 generateSampleData(); 

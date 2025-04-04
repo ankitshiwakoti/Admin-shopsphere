@@ -530,6 +530,74 @@
         .notification-footer a:hover {
             color: #1f2937;
         }
+
+        .profile-avatar {
+            position: relative;
+            width: 32px;
+            height: 32px;
+        }
+
+        .profile-avatar img {
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .profile-avatar:hover img {
+            transform: scale(1.05);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 6px;
+            height: 6px;
+            background-color: #22c55e;
+            border: 1px solid #fff;
+            border-radius: 50%;
+        }
+
+        .profile-dropdown {
+            width: 250px;
+            padding: 0;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 8px;
+        }
+
+        .profile-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 16px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            border-left: 1px solid rgba(0,0,0,0.05);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .profile-dropdown .dropdown-item {
+            color: #1f2937;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .profile-dropdown .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .profile-dropdown .dropdown-item.text-danger:hover {
+            background-color: #fef2f2;
+        }
+
+        .profile-dropdown .dropdown-divider {
+            margin: 0;
+            border-top: 1px solid #f0f0f0;
+        }
     </style>
 </head>
 <body>
@@ -625,7 +693,7 @@
                     </button>
 
                     <!-- Left side of navbar -->
-                    <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center">
                         <!-- Add any left-side elements here if needed -->
                     </div>
 
@@ -640,31 +708,35 @@
                         <li class="nav-item dropdown">
                             <a href="#" class="nav-link position-relative" data-bs-toggle="dropdown" id="notificationDropdown">
                                 <i class="bi bi-bell"></i>
-                                <span class="badge" id="notificationBadge"><%= locals.notifications && notifications.unreadCount > 0 ? notifications.unreadCount : '' %></span>
+                                <% if (locals.notifications && notifications.notifications && notifications.notifications.length > 0) { %>
+                                    <span class="badge" id="notificationBadge"><%= notifications.unreadCount %></span>
+                                <% } %>
                             </a>
                             <div class="dropdown-menu notification-dropdown dropdown-menu-end">
                                 <div class="notification-header">
                                     <h6>Notifications</h6>
-                                    <button class="settings-button" id="markAllReadBtn">
-                                        <i class="bi bi-check-all"></i>
-                                    </button>
-                                </div>
-                                <div class="notification-tabs">
-                                    <button class="notification-tab active" data-tab="all">
-                                        All <span class="badge" id="allCount"><%= locals.notifications && notifications.total ? notifications.total : 0 %></span>
-                                    </button>
-                                    <button class="notification-tab" data-tab="unread">
-                                        Unread <span class="badge" id="unreadCount"><%= locals.notifications && notifications.unreadCount ? notifications.unreadCount : 0 %></span>
-                                    </button>
-                                </div>
-                                <div class="notification-list" id="notificationList">
                                     <% if (locals.notifications && notifications.notifications && notifications.notifications.length > 0) { %>
+                                        <button class="settings-button" id="markAllReadBtn">
+                                            <i class="bi bi-check-all"></i>
+                                        </button>
+                                    <% } %>
+                                </div>
+                                <% if (locals.notifications && notifications.notifications && notifications.notifications.length > 0) { %>
+                                    <div class="notification-tabs">
+                                        <button class="notification-tab active" data-tab="all">
+                                            All <span class="badge" id="allCount"><%= notifications.total %></span>
+                                        </button>
+                                        <button class="notification-tab" data-tab="unread">
+                                            Unread <span class="badge" id="unreadCount"><%= notifications.unreadCount %></span>
+                                        </button>
+                                    </div>
+                                    <div class="notification-list" id="notificationList" style="max-height: 400px; overflow-y: auto;">
                                         <% notifications.notifications.forEach(notification => { %>
-                                            <div class="notification-item <%= !notification.readBy.some(read => read.admin._id.toString() === locals.admin._id.toString()) ? 'unread' : '' %>" 
+                                            <div class="notification-item <%= !notification.readBy || !notification.readBy.some(read => read && read.admin && read.admin._id && locals.admin && locals.admin._id && read.admin._id.toString() === locals.admin._id.toString()) ? 'unread' : '' %>" 
                                                  data-id="<%= notification._id %>"
                                                  data-link="<%= notification.link || '#' %>">
                                                 <div class="avatar">
-                                                    <img src="/images/default-avatar.svg" alt="<%= notification.createdBy.username %>">
+                                                    <img src="/images/default-avatar.svg" alt="<%= notification.createdBy ? notification.createdBy.username : 'Admin' %>">
                                                 </div>
                                                 <div class="notification-content">
                                                     <p class="notification-text">
@@ -674,22 +746,16 @@
                                                     <div class="notification-meta">
                                                         <span><%= new Date(notification.createdAt).toLocaleString() %></span>
                                                         <span class="dot"></span>
-                                                        <span>By <%= notification.createdBy.username %></span>
+                                                        <span>By <%= notification.createdBy ? notification.createdBy.username : 'Admin' %></span>
                                                     </div>
                                                 </div>
                                             </div>
                                         <% }); %>
-                                    <% } else { %>
-                                        <div class="notification-item">
-                                            <div class="notification-content text-center py-3">
-                                                <p class="notification-text">No notifications</p>
-                                            </div>
-                                        </div>
-                                    <% } %>
-                                </div>
-                                <div class="notification-footer">
-                                    <a href="/admin/notifications" id="viewAllNotifications">View all</a>
-                                </div>
+                                    </div>
+                                    <div class="notification-footer">
+                                        <a href="/admin/notifications" id="viewAllNotifications">View all</a>
+                                    </div>
+                                <% } %>
                             </div>
                         </li>
 
@@ -698,58 +764,36 @@
 
                         <!-- User Profile -->
                         <li class="nav-item dropdown">
-                            <button class="user-profile" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                                <div class="avatar-circle">
-                                    <i class="bi bi-person"></i>
+                            <a href="#" class="nav-link dropdown-toggle p-0" data-bs-toggle="dropdown">
+                                <div class="profile-avatar">
+                                    <img src="/images/default-avatar.svg" alt="Profile" class="rounded-circle" width="32" height="32">
+                                    <span class="status-dot"></span>
                                 </div>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" id="userDropdownMenu">
-                                <div class="dropdown-header">
-                                    <div class="user-info">
-                                        <div class="user-avatar">
-                                            <img src="/images/default-avatar.svg" alt="User Avatar">
-                                            <div class="status-indicator"></div>
+                            </a>
+                            <div class="dropdown-menu profile-dropdown dropdown-menu-end">
+                                <div class="px-3 py-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <img src="/images/default-avatar.svg" alt="Profile" class="rounded-circle" width="40" height="40">
                                         </div>
-                                        <div class="user-details">
-                                            <h6 class="user-name"><%= typeof admin !== 'undefined' ? admin.username : 'Admin User' %></h6>
-                                            <p class="user-email"><%= typeof admin !== 'undefined' ? admin.email : 'admin@example.com' %></p>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h6 class="mb-0 fw-semibold" style="font-size: 14px;"><%= locals.admin ? admin.username : 'Admin' %></h6>
+                                            <p class="text-muted mb-0" style="font-size: 12px;"><%= locals.admin ? admin.email : '' %></p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="menu-section">
-                                    <a href="/admin/home" class="menu-item">
-                                        <i class="bi bi-house"></i>
-                                        <span>Home</span>
-                                    </a>
-                                    <a href="/admin/profile" class="menu-item">
-                                        <i class="bi bi-person"></i>
-                                        <span>Profile</span>
-                                    </a>
-                                    <a href="/admin/projects" class="menu-item">
-                                        <i class="bi bi-folder"></i>
-                                        <span>Projects</span>
-                                    </a>
-                                    <a href="/admin/subscription" class="menu-item">
-                                        <i class="bi bi-credit-card"></i>
-                                        <span>Subscription</span>
-                                    </a>
-                                    <a href="/admin/security" class="menu-item">
-                                        <i class="bi bi-shield-lock"></i>
-                                        <span>Security</span>
-                                    </a>
-                                    <a href="/admin/settings" class="menu-item">
-                                        <i class="bi bi-gear"></i>
-                                        <span>Account settings</span>
-                                    </a>
-                                    <div class="menu-divider"></div>
-                                    <a href="/admin/logout" class="menu-item logout-button">
-                                        <i class="bi bi-box-arrow-right"></i>
-                                        <span>Logout</span>
-                                    </a>
-                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="/admin/profile" class="dropdown-item d-flex align-items-center py-2">
+                                    <i class="bi bi-person me-2"></i>
+                                    <span>Profile</span>
+                                </a>
+                                <a href="/admin/logout" class="dropdown-item d-flex align-items-center py-2 text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    <span>Logout</span>
+                                </a>
                             </div>
-                        </li>
-                    </ul>
+                                </li>
+                            </ul>
                 </div>
             </nav>
 
@@ -936,9 +980,9 @@
                         } else if (tabType === 'unread') {
                             document.querySelectorAll('.notification-item').forEach(item => {
                                 item.style.display = item.classList.contains('unread') ? '' : 'none';
-                            });
-                        }
-                    });
+        });
+    }
+});
                 });
             }
 
@@ -950,30 +994,6 @@
                 });
             }
         });
-
-        document.addEventListener('DOMContentLoaded', function () {
-    const chevronIcon = document.getElementById('chevronIcon');  // Chevron icon
-    const dropdownMenu = document.getElementById('userDropdownMenu'); // Dropdown menu
-
-    // Check if both elements are available in the DOM
-    if (chevronIcon && dropdownMenu) {
-        // Add click event listener to the chevron icon
-        chevronIcon.addEventListener('click', function () {
-            // Toggle chevron icon between down and up
-            if (chevronIcon.classList.contains('fa-chevron-down')) {
-                // Change icon to up and show the dropdown menu
-                chevronIcon.classList.remove('fa-chevron-down');
-                chevronIcon.classList.add('fa-chevron-up');
-                dropdownMenu.classList.add('show');  // Show dropdown
-            } else {
-                // Change icon to down and hide the dropdown menu
-                chevronIcon.classList.remove('fa-chevron-up');
-                chevronIcon.classList.add('fa-chevron-down');
-                dropdownMenu.classList.remove('show');  // Hide dropdown
-            }
-        });
-    }
-});
     </script>
 </body>
 </html> 

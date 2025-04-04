@@ -17,6 +17,9 @@ import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 
+// Import middleware
+import { loadNotifications } from './middleware/notificationMiddleware.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -64,6 +67,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// Load notifications for dashboard
+app.use(loadNotifications);
+
 // Middleware to determine layout for admin routes
 app.use('/admin', (req, res, next) => {
     // Skip layout for login and signup pages
@@ -85,6 +91,9 @@ app.use('/admin', adminRoutes);
 
 // API routes
 app.use('/api/roles', roleRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/customers', customerRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
