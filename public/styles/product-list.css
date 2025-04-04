@@ -1,0 +1,184 @@
+/* Product List Styles */
+
+/* Table Styles */
+.table {
+    --bs-table-hover-bg: var(--bs-gray-100);
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--bs-gray-600);
+}
+
+.table td {
+    vertical-align: middle;
+    color: var(--bs-gray-700);
+}
+
+/* Status Badges */
+.badge {
+    padding: 6px 12px;
+    font-weight: 500;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+.badge.bg-success-subtle {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: rgb(16, 185, 129) !important;
+}
+
+.badge.bg-warning-subtle {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    color: rgb(245, 158, 11) !important;
+}
+
+.badge.bg-danger-subtle {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: rgb(239, 68, 68) !important;
+}
+
+/* Search Input */
+.input-group .input-group-text {
+    border-color: var(--bs-gray-300);
+}
+
+.input-group .form-control {
+    border-color: var(--bs-gray-300);
+}
+
+.input-group .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+/* Filters and Buttons */
+.form-select {
+    border-color: var(--bs-gray-300);
+    min-width: 120px;
+    font-size: 14px;
+}
+
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+.btn-outline-secondary {
+    border-color: var(--bs-gray-300);
+    color: var(--bs-gray-700);
+    font-size: 14px;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--bs-gray-100);
+    border-color: var(--bs-gray-400);
+    color: var(--bs-gray-700);
+}
+
+/* Checkboxes */
+.form-check-input {
+    border-color: var(--bs-gray-400);
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Action Buttons */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.btn-icon i {
+    font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px !important;
+    margin: 0 2px;
+    border-color: var(--bs-gray-300);
+    color: var(--bs-gray-700);
+}
+
+.page-link:hover {
+    background-color: var(--bs-gray-100);
+    border-color: var(--bs-gray-400);
+    color: var(--bs-gray-700);
+}
+
+.page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 48px 0;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--bs-gray-400);
+    margin-bottom: 16px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        margin: 0 -1rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+    
+    .form-select,
+    .btn-outline-secondary {
+        width: 100%;
+    }
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border-color: var(--bs-gray-200);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+}
+
+/* Tooltips */
+.tooltip {
+    --bs-tooltip-bg: var(--bs-gray-900);
+    --bs-tooltip-padding-y: 6px;
+    --bs-tooltip-padding-x: 10px;
+    --bs-tooltip-font-size: 12px;
+    --bs-tooltip-border-radius: 4px;
+} 

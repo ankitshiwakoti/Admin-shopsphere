@@ -4,6 +4,7 @@ import * as authController from '../controllers/authController.js';
 import * as adminController from '../controllers/adminController.js';
 import * as roleViewController from '../controllers/roleViewController.js';
 import * as roleController from '../controllers/roleController.js';
+import * as customerController from '../controllers/customerController.js';
 import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
@@ -17,7 +18,6 @@ router.get('/logout', authController.getLogout);
 
 // Admin routes (with dashboard layout)
 router.get('/dashboard', isAdmin, adminController.getDashboard);
-router.get('/products/manage', isAdmin, adminController.getProductManagement);
 router.get('/categories/manage', isAdmin, adminController.getCategoryManagement);
 
 // Admin management routes
@@ -41,11 +41,11 @@ router.post('/categories/create', isAdmin, adminController.createCategory);
 router.post('/categories/:id', isAdmin, adminController.updateCategory);
 router.post('/categories/:id/delete', isAdmin, adminController.deleteCategory);
 
-// Product management routes
-router.get('/products', isAdmin, adminController.getProducts);
-router.get('/products/:id/edit', isAdmin, adminController.getProductEdit);
-router.post('/products/create', isAdmin, upload.array('images', 5), adminController.createProduct);
-router.post('/products/:id', isAdmin, upload.array('images', 5), adminController.updateProduct);
-router.post('/products/:id/delete', isAdmin, adminController.deleteProduct);
+// Customer management routes
+router.get('/customers', isAdmin, customerController.getAllCustomers);
+router.get('/customers/:id', isAdmin, customerController.getCustomerDetails);
+router.put('/customers/:id/status', isAdmin, customerController.updateCustomerStatus);
+router.get('/customers/:id/orders', isAdmin, customerController.getCustomerOrders);
+router.put('/orders/:id/status', isAdmin, customerController.updateOrderStatus);
 
 export default router; 

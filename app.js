@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin.js';
 import roleRoutes from './routes/roleRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,6 +31,7 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // View engine setup
 app.set('view engine', 'ejs');
@@ -77,9 +79,16 @@ app.use('/admin', (req, res, next) => {
 
 // Routes
 app.use('/', indexRoutes);
+
+// Admin routes (including product management)
 app.use('/admin', adminRoutes);
+app.use('/admin/products', productRoutes);
+app.use('/admin/categories', categoryRoutes);
+app.use('/admin/customers', customerRoutes);
+
+// API routes - Comment out the duplicate product routes to avoid conflicts
 app.use('/api/roles', roleRoutes);
-app.use('/api/products', productRoutes);
+// app.use('/api/products', productRoutes); // Commented out to avoid route conflicts
 app.use('/api/categories', categoryRoutes);
 
 // Error handling middleware

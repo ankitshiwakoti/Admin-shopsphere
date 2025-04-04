@@ -11,6 +11,11 @@ const productSchema = new mongoose.Schema({
         required: [true, 'Product description is required'],
         trim: true
     },
+    shortDescription: {
+        type: String,
+        required: true,
+        maxlength: 200
+    },
     price: {
         type: Number,
         required: [true, 'Product price is required'],
@@ -19,16 +24,46 @@ const productSchema = new mongoose.Schema({
     stock: {
         type: Number,
         required: [true, 'Product stock is required'],
-        min: [0, 'Stock cannot be negative']
+        min: [0, 'Stock cannot be negative'],
+        default: 0
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
         required: [true, 'Product category is required']
     },
-    images: [{
+    status: {
         type: String,
-        required: [true, 'At least one product image is required']
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
+    },
+    images: [{
+        url: {
+            type: String,
+            required: [true, 'At least one product image is required']
+        },
+        isMain: {
+            type: Boolean,
+            default: false
+        }
+    }],
+    attributes: {
+        color: [{
+            type: String
+        }],
+        size: [{
+            type: String
+        }]
+    },
+    specifications: [{
+        name: {
+            type: String,
+            required: true
+        },
+        value: {
+            type: String,
+            required: true
+        }
     }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -39,18 +74,29 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'
     },
-    status: {
-        type: String,
-        enum: ['active', 'inactive'],
-        default: 'active'
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
 }, {
     timestamps: true
 });
 
 // Index for faster queries
-productSchema.index({ name: 'text', description: 'text' });
+productSchema.index({ name: 'text', description: 'text', shortDescription: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ status: 1 });
+productSchema.index({ 'attributes.color': 1 });
+productSchema.index({ 'attributes.size': 1 });
+
+// Update the updatedAt field before saving
+productSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
+});
 
 export default mongoose.model('Product', productSchema); 

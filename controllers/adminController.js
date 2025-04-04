@@ -1,7 +1,7 @@
 import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import Category from '../models/Category.js';
-import Product from '../models/Product.js';
+import Product from '../models/product.js';
 
 // Get admin dashboard
 export const getDashboard = (req, res) => {

@@ -70,29 +70,51 @@ export const isSuperAdmin = (req, res, next) => {
 
 export const protect = async (req, res, next) => {
     try {
+        console.log('Session data:', req.session);
+        console.log('Is admin?', req.session.isAdmin);
+        console.log('Admin ID:', req.session.adminId);
+        
         if (!req.session.isAdmin) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
+            console.log('No admin session found');
+            // Check if it's an API request
+            if (req.path.startsWith('/api/')) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Not authorized to access this route'
+                });
+            }
+            // For web routes, redirect to login
+            req.flash('error_msg', 'Please log in to access this page');
+            return res.redirect('/admin/login');
         }
 
         // Get admin from session
         const admin = await Admin.findById(req.session.adminId).select('-password');
         if (!admin) {
-            return res.status(401).json({
-                success: false,
-                message: 'Admin not found'
-            });
+            console.log('Admin not found in database:', req.session.adminId);
+            if (req.path.startsWith('/api/')) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Admin not found'
+                });
+            }
+            req.flash('error_msg', 'Admin not found');
+            return res.redirect('/admin/login');
         }
 
+        console.log('Admin found:', admin.username, 'Role:', admin.role);
         req.admin = admin;
         next();
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        console.error('Protect middleware error:', error);
+        if (req.path.startsWith('/api/')) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+        req.flash('error_msg', 'An error occurred');
+        res.redirect('/admin/login');
     }
 };
 

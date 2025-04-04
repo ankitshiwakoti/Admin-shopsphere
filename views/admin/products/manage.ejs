@@ -1,85 +1,236 @@
 <%- contentFor('body') %>
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Product Management</h1>
-        <button class="btn btn-primary btn-shadow" data-bs-toggle="modal" data-bs-target="#createProductModal">
-            <i class="fas fa-plus me-2"></i>Add Product
-        </button>
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-semibold mb-1">Products</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item">Product</li>
+                    <li class="breadcrumb-item active" aria-current="page">List</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="/admin/products/create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New product
+        </a>
     </div>
 
-    <!-- Product List Table -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <div class="table-responsive" style="max-height: 440px;">
-                <table class="table table-hover mb-0">
-                    <thead class="sticky-top bg-white">
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <!-- Table Controls -->
+            <div class="p-4 border-bottom">
+                <div class="row g-3 align-items-center">
+                    <!-- Left Controls -->
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search products..." id="searchInput">
+                        </div>
+                    </div>
+                    
+                    <!-- Right Controls -->
+                    <div class="col-12 col-sm-6 col-lg-8">
+                        <div class="d-flex gap-2 justify-content-sm-end">
+                            <!-- Stock Filter -->
+                            <select class="form-select w-auto" id="stockFilter">
+                                <option value="">Stock</option>
+                                <option value="in">In Stock</option>
+                                <option value="out">Out of Stock</option>
+                                <option value="low">Low Stock</option>
+                            </select>
+                            
+                            <!-- Status Filter -->
+                            <select class="form-select w-auto" id="statusFilter">
+                                <option value="">Status</option>
+                                <option value="published">Published</option>
+                                <option value="draft">Draft</option>
+                            </select>
+
+                            <!-- Column Toggle -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-columns me-2"></i>Columns
+                                </button>
+                                <div class="dropdown-menu p-3" style="min-width: 200px;">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="colImage" checked>
+                                        <label class="form-check-label" for="colImage">Image</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="colName" checked>
+                                        <label class="form-check-label" for="colName">Name</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="colCategory" checked>
+                                        <label class="form-check-label" for="colCategory">Category</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="colPrice" checked>
+                                        <label class="form-check-label" for="colPrice">Price</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="colStock" checked>
+                                        <label class="form-check-label" for="colStock">Stock</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="colStatus" checked>
+                                        <label class="form-check-label" for="colStatus">Status</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Export -->
+                            <button class="btn btn-outline-secondary">
+                                <i class="fas fa-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
                         <tr>
-                            <th style="min-width: 100px;">Image</th>
-                            <th style="min-width: 170px;">Name</th>
-                            <th style="min-width: 170px;">Category</th>
-                            <th style="min-width: 100px;" class="text-end">Price</th>
-                            <th style="min-width: 100px;" class="text-end">Stock</th>
-                            <th style="min-width: 120px;">Status</th>
-                            <th style="min-width: 120px;">Actions</th>
+                            <th class="ps-4" style="width: 64px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                </div>
+                            </th>
+                            <th style="width: 80px;">Image</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th class="pe-4" style="width: 100px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (typeof products !== 'undefined' && products) { %>
+                        <% if (typeof products !== 'undefined' && products.length > 0) { %>
                             <% products.forEach(product => { %>
-                                <tr>
-                                    <td><img src="<%= product.images[0] %>" alt="<%= product.name %>" class="product-img" style="width: 50px; height: 50px; object-fit: cover;"></td>
-                                    <td><%= product.name %></td>
-                                    <td><%= product.category.name %></td>
-                                    <td class="text-end">$<%= product.price.toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
-                                    <td class="text-end"><%= product.stock.toLocaleString('en-US') %></td>
+                                <tr data-product-id="<%= product._id %>">
+                                    <td class="ps-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="<%= product._id %>">
+                                        </div>
+                                    </td>
                                     <td>
-                                        <% if (product.status === 'active') { %>
-                                            <span class="alert alert-success py-1 px-2 mb-0">
-                                                <i class="bi bi-check-circle me-1"></i><%= product.status %>
-                                            </span>
+                                        <% if(product.images && product.images.length > 0) { %>
+                                            <img src="<%= product.images[0].url %>" alt="<%= product.name %>" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
                                         <% } else { %>
-                                            <span class="alert alert-warning py-1 px-2 mb-0">
-                                                <i class="bi bi-x-circle me-1"></i><%= product.status %>
-                                            </span>
+                                            <div class="bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
                                         <% } %>
                                     </td>
                                     <td>
-                                        <a href="/admin/products/<%= product._id %>/edit" class="action-icon edit" title="Edit Product">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="/admin/products/<%= product._id %>/delete" method="POST" class="d-inline">
-                                            <button type="submit" class="action-icon delete" title="Delete Product" onclick="return confirm('Are you sure you want to delete this product?')">
-                                                <i class="bi bi-trash3"></i>
+                                        <h6 class="mb-0"><%= product.name %></h6>
+                                    </td>
+                                    <td><%= product.category ? product.category.name : 'N/A' %></td>
+                                    <td>
+                                        <% if (product.stock === 0) { %>
+                                            <span class="badge bg-danger-subtle text-danger">Out of stock</span>
+                                        <% } else if (product.stock <= 10) { %>
+                                            <span class="badge bg-warning-subtle text-warning">Low stock (<%= product.stock %>)</span>
+                                        <% } else { %>
+                                            <span class="badge bg-success-subtle text-success">In stock (<%= product.stock %>)</span>
+                                        <% } %>
+                                    </td>
+                                    <td>$<%= product.price.toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
+                                    <td>
+                                        <% if(product.status === 'published') { %>
+                                            <span class="badge bg-success">Published</span>
+                                        <% } else if(product.status === 'draft') { %>
+                                            <span class="badge bg-warning">Draft</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">Archived</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="pe-4">
+                                        <div class="d-flex gap-2">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-icon btn-outline-primary view-product" 
+                                                    data-id="<%= product._id %>"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
                                             </button>
-                                        </form>
+                                            <a href="/admin/products/edit/<%= product._id %>" 
+                                               class="btn btn-sm btn-icon btn-outline-primary" 
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-icon btn-outline-danger delete-product" 
+                                                    data-id="<%= product._id %>"
+                                                    title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="7" class="text-center">No products found</td>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                        <h6 class="fw-semibold mb-1">No products found</h6>
+                                        <p class="text-muted mb-0">Try adjusting your search or filters</p>
+                                    </div>
+                                </td>
                             </tr>
                         <% } %>
                     </tbody>
                 </table>
             </div>
-            
-            <!-- Pagination -->
-            <nav aria-label="Product table pagination" class="mt-3">
-                <ul class="pagination justify-content-end">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
+
+            <!-- Table Footer -->
+            <div class="d-flex align-items-center justify-content-between p-4 border-top">
+                <div class="text-muted">
+                    <% if (products && products.length > 0) { %>
+                        Showing <span class="fw-semibold">1-<%= Math.min(10, products.length) %></span> of <span class="fw-semibold"><%= products.length %></span> results
+                    <% } else { %>
+                        No results found
+                    <% } %>
+                </div>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <select class="form-select w-auto" id="rowsPerPage">
+                        <option value="10">10 rows</option>
+                        <option value="20">20 rows</option>
+                        <option value="50">50 rows</option>
+                        <option value="100">100 rows</option>
+                    </select>
+                    
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <% if (products && products.length > 0) { %>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <% if (products.length > 10) { %>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <% } %>
+                                <% if (products.length > 20) { %>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <% } %>
+                                <li class="page-item <%= products.length <= 10 ? 'disabled' : '' %>">
+                                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -88,8 +239,8 @@
 <div class="modal fade" id="createProductModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-heading">Create New Product</h5>
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-semibold">Create New Product</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -98,4 +249,559 @@
         </div>
     </div>
 </div>
+
+<!-- Product Details Modal -->
+<div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="product-images mb-3">
+                            <div id="productImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner" id="productImageCarouselInner">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="productName"></h4>
+                        <p id="productShortDescription" class="text-muted"></p>
+                        <div class="mb-2">
+                            <strong>Price:</strong> $<span id="productPrice"></span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Stock:</strong> <span id="productStock"></span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Category:</strong> <span id="productCategory"></span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Status:</strong> <span id="productStatus"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h5>Description</h5>
+                        <div id="productDescription"></div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h5>Specifications</h5>
+                        <div id="productSpecifications"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Attributes</h5>
+                        <div id="productAttributes"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="editProductBtn" class="btn btn-primary">Edit Product</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this product? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+
+    // Cache DOM elements
+    const table = document.querySelector('.table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr[data-product-id]')); // Only get product rows
+    const searchInput = document.getElementById('searchInput');
+    const stockFilter = document.getElementById('stockFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const selectAll = document.getElementById('selectAll');
+    const rowsPerPageSelect = document.getElementById('rowsPerPage');
+    const exportButton = document.querySelector('.btn-outline-secondary i.fas.fa-download').parentElement;
+    
+    // Store original table data
+    const originalRows = rows.map(row => ({
+        element: row,
+        searchText: row.textContent.toLowerCase(),
+        stock: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || '',
+        status: row.querySelector('td:nth-child(7) .badge')?.textContent.toLowerCase() || ''
+    }));
+
+    // Handle search
+    function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const stockValue = stockFilter.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+        originalRows.forEach(row => {
+            let show = row.searchText.includes(searchTerm);
+
+            // Apply stock filter
+            if (stockValue) {
+                if (stockValue === 'in' && !row.stock.includes('in stock')) show = false;
+                if (stockValue === 'out' && !row.stock.includes('out of stock')) show = false;
+                if (stockValue === 'low' && !row.stock.includes('low stock')) show = false;
+            }
+
+            // Apply status filter
+            if (statusValue && !row.status.includes(statusValue)) {
+                show = false;
+            }
+
+            row.element.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Show/hide no results message
+        const noResultsRow = tbody.querySelector('tr:not([data-product-id])');
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
+
+        updatePagination();
+    }
+
+    // Handle column visibility
+    const columnToggles = document.querySelectorAll('[id^="col"]');
+    columnToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const column = this.id.replace('col', '').toLowerCase();
+            let columnIndex;
+            
+            // Map column names to indices
+            switch(column) {
+                case 'image': columnIndex = 1; break;
+                case 'name': columnIndex = 2; break;
+                case 'category': columnIndex = 3; break;
+                case 'stock': columnIndex = 4; break;
+                case 'price': columnIndex = 5; break;
+                case 'status': columnIndex = 6; break;
+            }
+
+            if (columnIndex !== undefined) {
+                const cells = document.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
+                cells.forEach(cell => {
+                    cell.style.display = this.checked ? '' : 'none';
+                });
+            }
+        });
+    });
+
+    // Handle checkboxes
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const checkboxes = tbody.querySelectorAll('.form-check-input');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+
+    // Handle export
+    exportButton.addEventListener('click', function() {
+        const checkedRows = tbody.querySelectorAll('.form-check-input:checked');
+        if (checkedRows.length === 0) {
+            alert('Please select at least one product to export');
+            return;
+        }
+
+        const data = [];
+        checkedRows.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const product = {
+                name: row.querySelector('td:nth-child(3) h6').textContent,
+                category: row.querySelector('td:nth-child(4)').textContent,
+                stock: row.querySelector('td:nth-child(5) .badge').textContent,
+                price: row.querySelector('td:nth-child(6)').textContent,
+                status: row.querySelector('td:nth-child(7) .badge').textContent
+            };
+            data.push(product);
+        });
+
+        // Convert to CSV
+        const csv = convertToCSV(data);
+        downloadCSV(csv, 'products.csv');
+    });
+
+    function convertToCSV(data) {
+        const headers = Object.keys(data[0]);
+        const rows = data.map(obj => headers.map(header => obj[header]));
+        return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // Handle pagination
+    let currentPage = 1;
+    let rowsPerPage = parseInt(rowsPerPageSelect.value);
+
+    function updatePagination() {
+        const visibleRows = originalRows.filter(row => row.element.style.display !== 'none');
+        const totalRows = visibleRows.length;
+        
+        if (totalRows === 0) {
+            document.querySelector('.text-muted').textContent = 'No results found';
+            return;
+        }
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        currentPage = Math.min(currentPage, totalPages);
+        
+        // Update pagination UI
+        const pagination = document.querySelector('.pagination');
+        pagination.innerHTML = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a>
+            </li>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            pagination.innerHTML += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a>
+            </li>
+        `;
+
+        // Show only rows for current page
+        visibleRows.forEach((row, index) => {
+            const shouldShow = index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage;
+            row.element.style.display = shouldShow ? '' : 'none';
+        });
+
+        // Update showing text
+        const start = Math.min((currentPage - 1) * rowsPerPage + 1, totalRows);
+        const end = Math.min(currentPage * rowsPerPage, totalRows);
+        document.querySelector('.text-muted').innerHTML = `
+            Showing <span class="fw-semibold">${start}-${end}</span> of <span class="fw-semibold">${totalRows}</span> results
+        `;
+
+        // Add click handlers to pagination
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (!isNaN(newPage) && newPage > 0 && newPage <= totalPages) {
+                    currentPage = newPage;
+                    updatePagination();
+                }
+            });
+        });
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', handleSearch);
+    stockFilter.addEventListener('change', handleSearch);
+    statusFilter.addEventListener('change', handleSearch);
+    rowsPerPageSelect.addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1;
+        updatePagination();
+    });
+
+    // Initialize pagination
+    updatePagination();
+
+    // View Product Details
+    document.querySelectorAll('.view-product').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            fetchProductDetails(productId);
+        });
+    });
+
+    // Delete Product
+    let productToDelete = null;
+    document.querySelectorAll('.delete-product').forEach(button => {
+        button.addEventListener('click', function() {
+            productToDelete = this.getAttribute('data-id');
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        });
+    });
+
+    // Confirm Delete
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (productToDelete) {
+            deleteProduct(productToDelete);
+        }
+    });
+
+    // Fetch Product Details
+    function fetchProductDetails(productId) {
+        fetch(`/admin/products/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayProductDetails(data.data);
+                } else {
+                    alert('Error fetching product details: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error fetching product details');
+            });
+    }
+
+    // Display Product Details
+    function displayProductDetails(product) {
+        // Set basic info
+        document.getElementById('productName').textContent = product.name;
+        document.getElementById('productShortDescription').textContent = product.shortDescription;
+        document.getElementById('productPrice').textContent = product.price.toFixed(2);
+        document.getElementById('productStock').textContent = product.stock;
+        document.getElementById('productCategory').textContent = product.category ? product.category.name : 'N/A';
+        
+        // Set status badge
+        const statusBadge = document.getElementById('productStatus');
+        statusBadge.innerHTML = '';
+        let badgeClass = 'bg-secondary';
+        let statusText = 'Archived';
+        
+        if (product.status === 'published') {
+            badgeClass = 'bg-success';
+            statusText = 'Published';
+        } else if (product.status === 'draft') {
+            badgeClass = 'bg-warning';
+            statusText = 'Draft';
+        }
+        
+        const badge = document.createElement('span');
+        badge.className = `badge ${badgeClass}`;
+        badge.textContent = statusText;
+        statusBadge.appendChild(badge);
+        
+        // Set description
+        document.getElementById('productDescription').innerHTML = product.description;
+        
+        // Set specifications
+        const specsContainer = document.getElementById('productSpecifications');
+        specsContainer.innerHTML = '';
+        
+        if (product.specifications && product.specifications.length > 0) {
+            const table = document.createElement('table');
+            table.className = 'table table-sm table-bordered';
+            
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            const tbody = document.createElement('tbody');
+            product.specifications.forEach(spec => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${spec.name}</td>
+                    <td>${spec.value}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            specsContainer.appendChild(table);
+        } else {
+            specsContainer.innerHTML = '<p class="text-muted">No specifications available</p>';
+        }
+        
+        // Set attributes
+        const attrsContainer = document.getElementById('productAttributes');
+        attrsContainer.innerHTML = '';
+        
+        if (product.attributes) {
+            const table = document.createElement('table');
+            table.className = 'table table-sm table-bordered';
+            
+            const tbody = document.createElement('tbody');
+            
+            // Colors
+            if (product.attributes.color && product.attributes.color.length > 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <th>Colors</th>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${product.attributes.color.map(color => `
+                                <span class="badge bg-light text-dark">
+                                    <span class="color-swatch" style="background-color: ${getColorHex(color)};"></span>
+                                    ${color}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            // Sizes
+            if (product.attributes.size && product.attributes.size.length > 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <th>Sizes</th>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${product.attributes.size.map(size => `
+                                <span class="badge bg-light text-dark">${size}</span>
+                            `).join('')}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            table.appendChild(tbody);
+            attrsContainer.appendChild(table);
+        } else {
+            attrsContainer.innerHTML = '<p class="text-muted">No attributes available</p>';
+        }
+        
+        // Set images
+        const carouselInner = document.getElementById('productImageCarouselInner');
+        carouselInner.innerHTML = '';
+        
+        if (product.images && product.images.length > 0) {
+            product.images.forEach((image, index) => {
+                const div = document.createElement('div');
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                div.innerHTML = `
+                    <img src="${image.url}" class="d-block w-100" alt="${product.name}">
+                `;
+                carouselInner.appendChild(div);
+            });
+        } else {
+            const div = document.createElement('div');
+            div.className = 'carousel-item active';
+            div.innerHTML = `
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                    <i class="fas fa-image text-muted fa-3x"></i>
+                </div>
+            `;
+            carouselInner.appendChild(div);
+        }
+        
+        // Set edit button link
+        document.getElementById('editProductBtn').href = `/admin/products/edit/${product._id}`;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('productDetailsModal'));
+        modal.show();
+    }
+
+    // Delete Product
+    function deleteProduct(productId) {
+        fetch(`/admin/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                deleteModal.hide();
+                
+                // Show success message
+                alert('Product deleted successfully');
+                
+                // Reload page
+                window.location.reload();
+            } else {
+                alert('Error deleting product: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting product');
+        });
+    }
+
+    // Helper function to get color hex code
+    function getColorHex(colorName) {
+        const colorMap = {
+            'Black': '#000000',
+            'White': '#FFFFFF',
+            'Red': '#FF0000',
+            'Blue': '#0000FF',
+            'Green': '#008000',
+            'Yellow': '#FFFF00',
+            'Purple': '#800080',
+            'Orange': '#FFA500'
+        };
+        
+        return colorMap[colorName] || '#CCCCCC';
+    }
+});
+</script>
+
+<style>
+.color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+</style>
 

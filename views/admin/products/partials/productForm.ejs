@@ -1,50 +1,305 @@
-<form action="/admin/products/create" method="POST" enctype="multipart/form-data">
+<!-- Add TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/dvi65a8qvxkqmhn67t0bbru3qsn2qut2ndrqvsab8h3v98vc/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+<form action="/admin/products/create" method="POST" enctype="multipart/form-data" id="productForm">
     <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Product Name</label>
-                <input type="text" class="form-control" name="name" required>
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Basic Information</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Short Description</label>
+                        <textarea class="form-control" name="shortDescription" rows="2" maxlength="200"></textarea>
+                        <small class="text-muted">Brief description for product listings (max 200 characters)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Full Description</label>
+                        <textarea class="form-control" name="description" id="description" rows="8"></textarea>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" name="description" rows="3"></textarea>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Price</label>
-                <input type="number" class="form-control" name="price" step="0.01" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Stock</label>
-                <input type="number" class="form-control" name="stock" required>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Specifications</h5>
+                    <div id="specifications">
+                        <div class="specification-row row g-2 mb-2">
+                            <div class="col">
+                                <input type="text" class="form-control" name="specifications[0][name]" placeholder="Name (e.g., Material)">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" name="specifications[0][value]" placeholder="Value (e.g., Cotton)">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-spec"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="addSpecification">
+                        <i class="fas fa-plus me-1"></i>Add Specification
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select class="form-select" name="category" required>
-                    <option value="">Select a category</option>
-                    <% if (typeof categories !== 'undefined' && categories) { %>
-                        <% categories.forEach(category => { %>
-                            <option value="<%= category._id %>"><%= category.name %></option>
-                        <% }); %>
-                    <% } %>
-                </select>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Organization</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category" id="category" required>
+                            <option value="">Select a category</option>
+                            <% if (typeof categories !== 'undefined' && categories) { %>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>"><%= category.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="published">Published</option>
+                            <option value="draft" selected>Draft</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Status</label>
-                <select class="form-select" name="status" required>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Pricing & Inventory</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" name="price" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" class="form-control" name="stock" required>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Images</label>
-                <input type="file" class="form-control" name="images" multiple accept="image/*">
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Images</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Product Images</label>
+                        <input type="file" class="form-control" name="images" multiple accept="image/*" id="imageInput">
+                        <div id="imagePreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Attributes Section -->
+            <div id="dynamicAttributes" class="card shadow-sm mb-3" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Product Attributes</h5>
+                    <div id="attributesContainer"></div>
+                </div>
             </div>
         </div>
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-primary">Create Product</button>
     </div>
-</form> 
+</form>
+
+<script>
+// Initialize TinyMCE
+tinymce.init({
+    selector: '#description',
+    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+    height: 300
+});
+
+// Handle image preview
+document.getElementById('imageInput').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    Array.from(e.target.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'position-relative';
+            div.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+            `;
+            preview.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+    });
+});
+
+// Handle specifications
+let specCount = 1;
+document.getElementById('addSpecification').addEventListener('click', function() {
+    const container = document.getElementById('specifications');
+    const newRow = document.createElement('div');
+    newRow.className = 'specification-row row g-2 mb-2';
+    newRow.innerHTML = `
+        <div class="col">
+            <input type="text" class="form-control" name="specifications[${specCount}][name]" placeholder="Name (e.g., Material)">
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" name="specifications[${specCount}][value]" placeholder="Value (e.g., Cotton)">
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-spec"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+    container.appendChild(newRow);
+    specCount++;
+});
+
+document.getElementById('specifications').addEventListener('click', function(e) {
+    if (e.target.closest('.remove-spec')) {
+        e.target.closest('.specification-row').remove();
+    }
+});
+
+// Handle dynamic attributes based on category
+document.getElementById('category').addEventListener('change', async function() {
+    const categoryId = this.value;
+    if (!categoryId) {
+        document.getElementById('dynamicAttributes').style.display = 'none';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/products/category-attributes/${categoryId}`);
+        const data = await response.json();
+
+        if (data.attributes && data.attributes.length > 0) {
+            const container = document.getElementById('attributesContainer');
+            container.innerHTML = '';
+
+            data.attributes.forEach(attr => {
+                const div = document.createElement('div');
+                div.className = 'mb-3';
+                
+                switch(attr.type) {
+                    case 'text':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <input type="text" class="form-control" name="attributes[${attr.name}]" ${attr.required ? 'required' : ''}>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+
+                    case 'number':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <input type="number" class="form-control" name="attributes[${attr.name}]" ${attr.required ? 'required' : ''}>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+
+                    case 'select':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <select class="form-select" name="attributes[${attr.name}]" ${attr.required ? 'required' : ''}>
+                                <option value="">Select ${attr.name}</option>
+                                ${attr.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                            </select>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+
+                    case 'multiselect':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <select class="form-select" name="attributes[${attr.name}][]" multiple ${attr.required ? 'required' : ''}>
+                                ${attr.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                            </select>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+
+                    case 'color':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                ${attr.options.map(color => `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="attributes[${attr.name}][]" value="${color}">
+                                        <label class="form-check-label">
+                                            <span class="color-swatch" style="background-color: ${color}"></span>
+                                            ${color}
+                                        </label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+
+                    case 'size':
+                        div.innerHTML = `
+                            <label class="form-label">${attr.name}</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                ${attr.options.map(size => `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="attributes[${attr.name}][]" value="${size}">
+                                        <label class="form-check-label">${size}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ${attr.description ? `<small class="text-muted">${attr.description}</small>` : ''}
+                        `;
+                        break;
+                }
+
+                container.appendChild(div);
+            });
+
+            document.getElementById('dynamicAttributes').style.display = 'block';
+        } else {
+            document.getElementById('dynamicAttributes').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching category attributes:', error);
+    }
+});
+</script>
+
+<style>
+.color-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 5px;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+.specification-row {
+    transition: all 0.3s ease;
+}
+
+.specification-row:hover {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+#imagePreview img {
+    transition: transform 0.2s ease;
+}
+
+#imagePreview img:hover {
+    transform: scale(1.05);
+}
+</style> 
