@@ -17,16 +17,15 @@ router.get('/:id', getCategory);
 // Protected routes
 router.use(protect);
 
-// Create category - Only Super Admin & Product Manager
+// Create category - Only users with manage_categories permission
 router.post('/create',
-    authorize('superadmin', 'product_manager'),
-    checkPermission('manage_products'),
+    checkPermission('manage_categories'),
     createCategory
 );
 
-// Update category - Only authorized roles
+// Update category - Only users with manage_categories permission
 router.patch('/update/:id',
-    checkPermission('manage_products'),
+    checkPermission('manage_categories'),
     updateCategory
 );
 

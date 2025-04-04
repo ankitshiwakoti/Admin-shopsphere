@@ -15,6 +15,10 @@ import adminRoutes from './routes/admin.js';
 import roleRoutes from './routes/roleRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+
+// Import middleware
+import { loadNotifications } from './middleware/notificationMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,6 +34,7 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // View engine setup
 app.set('view engine', 'ejs');
@@ -62,6 +67,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// Load notifications for dashboard
+app.use(loadNotifications);
+
 // Middleware to determine layout for admin routes
 app.use('/admin', (req, res, next) => {
     // Skip layout for login and signup pages
@@ -77,10 +85,15 @@ app.use('/admin', (req, res, next) => {
 
 // Routes
 app.use('/', indexRoutes);
+
+// Admin routes (consolidated in admin.js)
 app.use('/admin', adminRoutes);
+
+// API routes
 app.use('/api/roles', roleRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/customers', customerRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

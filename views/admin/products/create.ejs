@@ -1,0 +1,963 @@
+<!-- Add TinyMCE script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
+
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Add New Product</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/products">Products</a></li>
+                        <li class="breadcrumb-item active">Add Product</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <% if(success_msg != ''){ %>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <%= success_msg %>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <% } %>
+
+                            <% if(error_msg != ''){ %>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <%= error_msg %>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <% } %>
+
+                            <form id="productForm" action="/admin/products/create" method="POST" enctype="multipart/form-data">
+                                <!-- Progress Steps -->
+                                <div class="product-steps mb-4">
+                                    <div class="step active" data-step="1">
+                                        <div class="step-icon">
+                                            <i class="fas fa-info-circle"></i>
+                                        </div>
+                                        <div class="step-label">Basic Info</div>
+                                    </div>
+                                    <div class="step" data-step="2">
+                                        <div class="step-icon">
+                                            <i class="fas fa-tags"></i>
+                                        </div>
+                                        <div class="step-label">Details</div>
+                                    </div>
+                                    <div class="step" data-step="3">
+                                        <div class="step-icon">
+                                            <i class="fas fa-images"></i>
+                                        </div>
+                                        <div class="step-label">Media</div>
+                                    </div>
+                                    <div class="step" data-step="4">
+                                        <div class="step-icon">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="step-label">Review</div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Basic Information -->
+                                <div class="step-content active" id="step1">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <label>Product Name</label>
+                                                <input type="text" class="form-control" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Short Description</label>
+                                                <textarea class="form-control" name="shortDescription" rows="2" maxlength="200" required></textarea>
+                                                <small class="text-muted">Brief description for product listings (max 200 characters)</small>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Full Description</label>
+                                                <textarea class="form-control" name="description" id="description" required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Category</label>
+                                                <select class="form-select" name="category" id="category" required>
+                                                    <option value="">Select a category</option>
+                                                    <% if (typeof categories !== 'undefined' && categories) { %>
+                                                        <% categories.forEach(category => { %>
+                                                            <option value="<%= category._id %>"><%= category.name %></option>
+                                                        <% }); %>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Status</label>
+                                                <select class="form-select" name="status" required>
+                                                    <option value="published">Published</option>
+                                                    <option value="draft" selected>Draft</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Product Details -->
+                                <div class="step-content" id="step2">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Pricing & Inventory</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <label>Price</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">$</span>
+                                                            <input type="number" class="form-control" name="price" step="0.01" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Stock</label>
+                                                        <input type="number" class="form-control" name="stock" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Specifications</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="specifications">
+                                                        <!-- Specification rows will be added here -->
+                                                    </div>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addSpecification">
+                                                        <i class="fas fa-plus me-1"></i>Add Specification
+                                                    </button>
+                                                    <small class="text-muted d-block mt-2">Add key-value pairs like "Weight: 2.5 kg" or "Dimensions: 10 x 5 x 3 inches"</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Colors and Sizes Section -->
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Colors</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="color-options d-flex flex-wrap gap-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Black" id="color-black">
+                                                            <label class="form-check-label" for="color-black">
+                                                                <span class="color-swatch" style="background-color: #000000;"></span>
+                                                                Black
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="White" id="color-white">
+                                                            <label class="form-check-label" for="color-white">
+                                                                <span class="color-swatch" style="background-color: #FFFFFF; border: 1px solid #dee2e6;"></span>
+                                                                White
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Red" id="color-red">
+                                                            <label class="form-check-label" for="color-red">
+                                                                <span class="color-swatch" style="background-color: #FF0000;"></span>
+                                                                Red
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Blue" id="color-blue">
+                                                            <label class="form-check-label" for="color-blue">
+                                                                <span class="color-swatch" style="background-color: #0000FF;"></span>
+                                                                Blue
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Green" id="color-green">
+                                                            <label class="form-check-label" for="color-green">
+                                                                <span class="color-swatch" style="background-color: #008000;"></span>
+                                                                Green
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Yellow" id="color-yellow">
+                                                            <label class="form-check-label" for="color-yellow">
+                                                                <span class="color-swatch" style="background-color: #FFFF00;"></span>
+                                                                Yellow
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Purple" id="color-purple">
+                                                            <label class="form-check-label" for="color-purple">
+                                                                <span class="color-swatch" style="background-color: #800080;"></span>
+                                                                Purple
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[color][]" value="Orange" id="color-orange">
+                                                            <label class="form-check-label" for="color-orange">
+                                                                <span class="color-swatch" style="background-color: #FFA500;"></span>
+                                                                Orange
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" id="addCustomColor">
+                                                            <i class="fas fa-plus me-1"></i>Add Custom Color
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Sizes</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="size-options d-flex flex-wrap gap-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="XS" id="size-xs">
+                                                            <label class="form-check-label" for="size-xs">XS</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="S" id="size-s">
+                                                            <label class="form-check-label" for="size-s">S</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="M" id="size-m">
+                                                            <label class="form-check-label" for="size-m">M</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="L" id="size-l">
+                                                            <label class="form-check-label" for="size-l">L</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="XL" id="size-xl">
+                                                            <label class="form-check-label" for="size-xl">XL</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="XXL" id="size-xxl">
+                                                            <label class="form-check-label" for="size-xxl">XXL</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="attributes[size][]" value="3XL" id="size-3xl">
+                                                            <label class="form-check-label" for="size-3xl">3XL</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" id="addCustomSize">
+                                                            <i class="fas fa-plus me-1"></i>Add Custom Size
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Dynamic Attributes Section -->
+                                    <div id="dynamicAttributes" class="card mt-3" style="display: none;">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">Product Attributes</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="attributesContainer"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Media -->
+                                <div class="step-content" id="step3">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Product Images</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="dropzone-container">
+                                                        <input type="file" class="form-control" name="images" multiple accept="image/*" id="imageInput" required>
+                                                        <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-3"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4: Review -->
+                                <div class="step-content" id="step4">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title mb-0">Review Product Details</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="reviewContent"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Navigation Buttons -->
+                                <div class="form-navigation mt-4">
+                                    <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">Previous</button>
+                                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                                    <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">Create Product</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.product-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.product-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.step {
+    position: relative;
+    z-index: 2;
+    background: white;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-icon {
+    background: var(--primary);
+    color: white;
+}
+
+.step-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.step.active .step-label {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+}
+
+.dropzone-container {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.dropzone-container:hover {
+    border-color: var(--primary);
+}
+
+#imagePreview img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+#imagePreview img:hover {
+    transform: scale(1.05);
+}
+
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.specification-row {
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+</style>
+
+<script>
+// Initialize TinyMCE
+tinymce.init({
+    selector: '#description',
+    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+    height: 300,
+    setup: function(editor) {
+        editor.on('change', function() {
+            // Update the hidden textarea with the editor content
+            editor.save();
+        });
+    }
+});
+
+// Form Navigation
+let currentStep = 1;
+const totalSteps = 4;
+
+function updateStepVisibility() {
+    console.log('Updating step visibility to step:', currentStep);
+    
+    // Update step indicators
+    document.querySelectorAll('.step').forEach(step => {
+        const stepNum = parseInt(step.dataset.step);
+        step.classList.toggle('active', stepNum === currentStep);
+    });
+
+    // Update content visibility
+    document.querySelectorAll('.step-content').forEach(content => {
+        content.classList.toggle('active', content.id === `step${currentStep}`);
+    });
+
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (prevBtn) {
+        prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+    }
+    
+    if (nextBtn) {
+        nextBtn.style.display = currentStep < totalSteps ? 'block' : 'none';
+    }
+    
+    if (submitBtn) {
+        submitBtn.style.display = currentStep === totalSteps ? 'block' : 'none';
+    }
+
+    // Update review content if on last step
+    if (currentStep === totalSteps) {
+        updateReviewContent();
+    }
+}
+
+function updateReviewContent() {
+    const reviewContent = document.getElementById('reviewContent');
+    const formData = new FormData(document.getElementById('productForm'));
+    
+    let html = '<div class="row">';
+    
+    // Basic Info
+    html += `
+        <div class="col-md-6">
+            <h6 class="mb-3">Basic Information</h6>
+            <p><strong>Name:</strong> ${formData.get('name') || 'Not provided'}</p>
+            <p><strong>Category:</strong> ${document.getElementById('category').selectedOptions[0].text || 'Not selected'}</p>
+            <p><strong>Status:</strong> ${formData.get('status') || 'Not selected'}</p>
+            <p><strong>Short Description:</strong> ${formData.get('shortDescription') || 'Not provided'}</p>
+        </div>
+    `;
+
+    // Pricing & Inventory
+    html += `
+        <div class="col-md-6">
+            <h6 class="mb-3">Pricing & Inventory</h6>
+            <p><strong>Price:</strong> $${formData.get('price') || 'Not provided'}</p>
+            <p><strong>Stock:</strong> ${formData.get('stock') || 'Not provided'}</p>
+        </div>
+    `;
+
+    // Colors
+    const colors = [];
+    document.querySelectorAll('input[name="attributes[color][]"]:checked').forEach(checkbox => {
+        colors.push(checkbox.value);
+    });
+    
+    if (colors.length > 0) {
+        html += `
+            <div class="col-md-6 mt-3">
+                <h6 class="mb-3">Colors</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    ${colors.map(color => `
+                        <span class="badge bg-light text-dark">
+                            <span class="color-swatch" style="background-color: ${getColorHex(color)};"></span>
+                            ${color}
+                        </span>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Sizes
+    const sizes = [];
+    document.querySelectorAll('input[name="attributes[size][]"]:checked').forEach(checkbox => {
+        sizes.push(checkbox.value);
+    });
+    
+    if (sizes.length > 0) {
+        html += `
+            <div class="col-md-6 mt-3">
+                <h6 class="mb-3">Sizes</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    ${sizes.map(size => `
+                        <span class="badge bg-light text-dark">${size}</span>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // Specifications
+    const specifications = [];
+    document.querySelectorAll('.specification-row').forEach(row => {
+        const nameInput = row.querySelector('input[name^="specifications"][name$="[name]"]');
+        const valueInput = row.querySelector('input[name^="specifications"][name$="[value]"]');
+        
+        if (nameInput && valueInput && nameInput.value && valueInput.value) {
+            specifications.push({
+                name: nameInput.value,
+                value: valueInput.value
+            });
+        }
+    });
+
+    if (specifications.length > 0) {
+        html += `
+            <div class="col-12 mt-3">
+                <h6 class="mb-3">Specifications</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${specifications.map(spec => `
+                                <tr>
+                                    <td>${spec.name}</td>
+                                    <td>${spec.value}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    reviewContent.innerHTML = html;
+}
+
+// Helper function to get color hex code
+function getColorHex(colorName) {
+    const colorMap = {
+        'Black': '#000000',
+        'White': '#FFFFFF',
+        'Red': '#FF0000',
+        'Blue': '#0000FF',
+        'Green': '#008000',
+        'Yellow': '#FFFF00',
+        'Purple': '#800080',
+        'Orange': '#FFA500'
+    };
+    
+    return colorMap[colorName] || '#CCCCCC';
+}
+
+// Make sure the DOM is fully loaded before attaching event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded, attaching event listeners');
+    
+    // Attach event listeners to navigation buttons
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            console.log('Next button clicked, current step:', currentStep);
+            if (currentStep < totalSteps) {
+                // Validate current step before proceeding
+                if (validateCurrentStep()) {
+                    currentStep++;
+                    updateStepVisibility();
+                }
+            }
+        });
+    } else {
+        console.error('Next button not found in the DOM');
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            console.log('Previous button clicked, current step:', currentStep);
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepVisibility();
+            }
+        });
+    } else {
+        console.error('Previous button not found in the DOM');
+    }
+    
+    // Function to validate the current step
+    function validateCurrentStep() {
+        const currentStepElement = document.getElementById(`step${currentStep}`);
+        if (!currentStepElement) return true;
+        
+        // Get all required fields in the current step
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            // Skip validation for TinyMCE editor as it's handled separately
+            if (field.id === 'description') return;
+            
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+                
+                // Create or update error message
+                let errorMsg = field.nextElementSibling;
+                if (!errorMsg || !errorMsg.classList.contains('invalid-feedback')) {
+                    errorMsg = document.createElement('div');
+                    errorMsg.className = 'invalid-feedback';
+                    field.parentNode.appendChild(errorMsg);
+                }
+                errorMsg.textContent = 'This field is required';
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Special handling for TinyMCE editor
+        if (currentStep === 1) {
+            const descriptionContent = tinymce.get('description').getContent();
+            if (!descriptionContent.trim()) {
+                isValid = false;
+                const editorContainer = document.querySelector('.tox-tinymce');
+                if (editorContainer) {
+                    editorContainer.classList.add('is-invalid');
+                    
+                    // Create or update error message
+                    let errorMsg = editorContainer.nextElementSibling;
+                    if (!errorMsg || !errorMsg.classList.contains('invalid-feedback')) {
+                        errorMsg = document.createElement('div');
+                        errorMsg.className = 'invalid-feedback';
+                        editorContainer.parentNode.appendChild(errorMsg);
+                    }
+                    errorMsg.textContent = 'Description is required';
+                }
+            } else {
+                const editorContainer = document.querySelector('.tox-tinymce');
+                if (editorContainer) {
+                    editorContainer.classList.remove('is-invalid');
+                }
+            }
+        }
+        
+        if (!isValid) {
+            alert('Please fill in all required fields before proceeding.');
+        }
+        
+        return isValid;
+    }
+    
+    // Handle form submission
+    const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate all steps before submission
+            if (!validateCurrentStep()) {
+                alert('Please fill in all required fields before submitting.');
+                return;
+            }
+            
+            // Create a new FormData object
+            const formData = new FormData();
+            
+            // Add basic fields
+            formData.append('name', document.querySelector('input[name="name"]').value);
+            formData.append('shortDescription', document.querySelector('textarea[name="shortDescription"]').value);
+            formData.append('description', tinymce.get('description').getContent());
+            formData.append('category', document.getElementById('category').value);
+            formData.append('status', document.querySelector('select[name="status"]').value);
+            formData.append('price', document.querySelector('input[name="price"]').value);
+            formData.append('stock', document.querySelector('input[name="stock"]').value);
+            
+            // Add images
+            const imageInput = document.getElementById('imageInput');
+            if (imageInput.files.length > 0) {
+                for (let i = 0; i < imageInput.files.length; i++) {
+                    formData.append('images', imageInput.files[i]);
+                }
+            }
+            
+            // Collect specifications
+            const specifications = [];
+            document.querySelectorAll('.specification-row').forEach(row => {
+                const nameInput = row.querySelector('input[name^="specifications"][name$="[name]"]');
+                const valueInput = row.querySelector('input[name^="specifications"][name$="[value]"]');
+                
+                if (nameInput && valueInput && nameInput.value && valueInput.value) {
+                    specifications.push({
+                        name: nameInput.value,
+                        value: valueInput.value
+                    });
+                }
+            });
+            
+            // Add specifications to form data
+            formData.append('specifications', JSON.stringify(specifications));
+            
+            // Collect attributes
+            const attributes = {
+                color: [],
+                size: []
+            };
+            
+            // Get selected colors
+            document.querySelectorAll('input[name="attributes[color][]"]:checked').forEach(checkbox => {
+                attributes.color.push(checkbox.value);
+            });
+            
+            // Get selected sizes
+            document.querySelectorAll('input[name="attributes[size][]"]:checked').forEach(checkbox => {
+                attributes.size.push(checkbox.value);
+            });
+            
+            // Add attributes to form data
+            formData.append('attributes', JSON.stringify(attributes));
+            
+            // Log the form data for debugging
+            console.log('Form data being sent:', Object.fromEntries(formData));
+            
+            // Submit the form
+            fetch('/admin/products/create', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    // Show success message
+                    alert('Product created successfully!');
+                    // Redirect to product management page
+                    window.location.href = '/admin/products';
+                } else if (data && data.error) {
+                    // Show error message
+                    alert('Error creating product: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating product: ' + error.message);
+            });
+        });
+    } else {
+        console.error('Product form not found in the DOM');
+    }
+    
+    // Handle image preview
+    const imageInput = document.getElementById('imageInput');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'position-relative';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                    `;
+                    preview.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+    } else {
+        console.error('Image input not found in the DOM');
+    }
+    
+    // Handle specifications
+    let specCount = 0;
+    const addSpecificationBtn = document.getElementById('addSpecification');
+    if (addSpecificationBtn) {
+        // Add initial specification row
+        addSpecificationRow();
+        
+        addSpecificationBtn.addEventListener('click', function() {
+            addSpecificationRow();
+        });
+    } else {
+        console.error('Add specification button not found in the DOM');
+    }
+    
+    function addSpecificationRow() {
+        const container = document.getElementById('specifications');
+        const newRow = document.createElement('div');
+        newRow.className = 'specification-row row g-2 mb-2';
+        newRow.innerHTML = `
+            <div class="col">
+                <input type="text" class="form-control" name="specifications[${specCount}][name]" placeholder="Name">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="specifications[${specCount}][value]" placeholder="Value">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-spec">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(newRow);
+        specCount++;
+    }
+
+    const specificationsContainer = document.getElementById('specifications');
+    if (specificationsContainer) {
+        specificationsContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-spec')) {
+                e.target.closest('.specification-row').remove();
+            }
+        });
+    } else {
+        console.error('Specifications container not found in the DOM');
+    }
+    
+    // Handle dynamic attributes based on category
+    const categorySelect = document.getElementById('category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            console.log('Category selected:', categoryId);
+            
+            // Show the attributes section when a category is selected
+            const attributesSection = document.getElementById('attributesSection');
+            if (attributesSection) {
+                attributesSection.style.display = categoryId ? 'block' : 'none';
+            }
+        });
+    } else {
+        console.error('Category select element not found');
+    }
+    
+    // Handle custom color and size
+    const addCustomColorBtn = document.getElementById('addCustomColor');
+    if (addCustomColorBtn) {
+        addCustomColorBtn.addEventListener('click', function() {
+            const colorName = prompt('Enter color name:');
+            if (colorName) {
+                const colorHex = prompt('Enter color hex code (e.g., #FF0000):', '#000000');
+                if (colorHex) {
+                    const colorOptions = document.querySelector('.color-options');
+                    const newColor = document.createElement('div');
+                    newColor.className = 'form-check';
+                    newColor.innerHTML = `
+                        <input class="form-check-input" type="checkbox" name="attributes[color][]" value="${colorName}" id="color-${colorName.toLowerCase()}">
+                        <label class="form-check-label" for="color-${colorName.toLowerCase()}">
+                            <span class="color-swatch" style="background-color: ${colorHex};"></span>
+                            ${colorName}
+                        </label>
+                    `;
+                    colorOptions.appendChild(newColor);
+                }
+            }
+        });
+    }
+    
+    const addCustomSizeBtn = document.getElementById('addCustomSize');
+    if (addCustomSizeBtn) {
+        addCustomSizeBtn.addEventListener('click', function() {
+            const sizeName = prompt('Enter size name:');
+            if (sizeName) {
+                const sizeOptions = document.querySelector('.size-options');
+                const newSize = document.createElement('div');
+                newSize.className = 'form-check';
+                newSize.innerHTML = `
+                    <input class="form-check-input" type="checkbox" name="attributes[size][]" value="${sizeName}" id="size-${sizeName.toLowerCase()}">
+                    <label class="form-check-label" for="size-${sizeName.toLowerCase()}">${sizeName}</label>
+                `;
+                sizeOptions.appendChild(newSize);
+            }
+        });
+    }
+    
+    // Initialize the form
+    updateStepVisibility();
+});
+</script> 

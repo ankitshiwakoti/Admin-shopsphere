@@ -101,3 +101,105 @@ Backend developer should:
 - For frontend issues: Contact [Frontend Developer 1]
 - For backend issues: Contact [Backend Developer]
 - For general questions: Create an issue in the repository 
+
+## Route Structure and Permission System
+
+### Authentication and Authorization
+
+The application uses a multi-layered authentication and authorization system:
+
+1. **Authentication**: Verifies that a user is logged in
+2. **Role-based Authorization**: Checks if a user has the required role (admin, superadmin)
+3. **Permission-based Authorization**: Checks if a user has specific permissions (manage_products, manage_categories, etc.)
+
+### Middleware
+
+- **protect**: Basic authentication check, ensures user is logged in
+- **isAdmin**: Checks if user has admin or superadmin role
+- **isSuperAdmin**: Checks if user has superadmin role
+- **authorize**: Checks if user has one of the specified roles
+- **checkPermission**: Checks if user has a specific permission
+
+### Route Structure
+
+All admin routes are consolidated in `routes/admin.js` and organized by feature:
+
+#### Public Routes (No Authentication Required)
+- `/admin/login`: Login page
+- `/admin/signup`: Signup page
+- `/admin/logout`: Logout
+
+#### Protected Routes (Authentication Required)
+- `/admin/dashboard`: Dashboard (requires 'view_dashboard' permission)
+
+#### Category Management Routes
+- View routes:
+  - `/admin/categories`: Category management page (requires 'manage_categories' permission)
+  - `/admin/categories/:id/edit`: Edit category page (requires 'manage_categories' permission)
+- API routes:
+  - `/admin/categories/create`: Create category (requires 'manage_categories' permission)
+  - `/admin/categories/:id`: Update category (requires 'manage_categories' permission)
+  - `/admin/categories/:id/delete`: Delete category (requires 'manage_categories' permission)
+
+#### Product Management Routes
+- View routes:
+  - `/admin/products/manage`: Product management page (requires 'manage_products' permission)
+  - `/admin/products/create`: Create product page (requires 'manage_products' permission)
+  - `/admin/products/edit/:id`: Edit product page (requires 'manage_products' permission)
+- API routes:
+  - `/admin/products/create`: Create product (requires 'manage_products' permission)
+  - `/admin/products/edit/:id`: Update product (requires 'manage_products' permission)
+  - `/admin/products/:id`: Delete product (requires 'manage_products' permission)
+
+#### Customer Management Routes
+- View routes:
+  - `/admin/customers`: Customer list page (requires 'manage_customers' permission)
+  - `/admin/customers/:id`: Customer details page (requires 'manage_customers' permission)
+  - `/admin/customers/:id/orders`: Customer orders page (requires 'manage_customers' permission)
+- API routes:
+  - `/admin/customers/:id/status`: Update customer status (requires 'manage_customers' permission)
+  - `/admin/orders/:id/status`: Update order status (requires 'manage_customers' permission)
+
+#### Admin Management Routes (Superadmin Only)
+- `/admin/admins`: Admin list page
+- `/admin/admins/:id/edit`: Edit admin page
+- `/admin/admins`: Create admin
+- `/admin/admins/:id/update`: Update admin
+- `/admin/admins/:id/delete`: Delete admin
+
+#### Role Management Routes (Superadmin Only)
+- View routes:
+  - `/admin/roles`: Role management page
+- API routes:
+  - `/admin/roles/list`: Get all roles
+  - `/admin/roles`: Create role
+  - `/admin/roles/assign`: Assign role to admin
+  - `/admin/roles/remove`: Remove role from admin
+  - `/admin/roles/:roleId/admins`: Get admins assigned to a role
+
+#### Error Pages
+- `/admin/unauthorized`: Unauthorized access page
+
+### API Routes
+
+API routes are organized separately:
+
+- `/api/roles`: Role management API (requires superadmin role)
+
+## Permission System
+
+The application uses a role-based permission system:
+
+1. **Roles**: Define sets of permissions (e.g., Product Manager, Category Manager)
+2. **Permissions**: Define specific actions (e.g., manage_products, manage_categories)
+3. **Admins**: Can have multiple roles, inheriting all permissions from those roles
+
+### Available Permissions
+
+- `view_dashboard`: Access to the dashboard
+- `manage_products`: Manage products (create, update, delete)
+- `manage_categories`: Manage categories (create, update, delete)
+- `manage_customers`: Manage customers (view, update status)
+- `manage_orders`: Manage orders (view, update status)
+- `manage_admins`: Manage admins (create, update, delete)
+- `manage_roles`: Manage roles (create, assign, remove) 
