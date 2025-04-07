@@ -208,6 +208,54 @@ h5, .h5 {
     border-color: var(--color-primary-hover);
 }
 
+.btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: white;
+}
+
+.btn-outline-view {
+    color: var(--color-body-light);
+    border-color: var(--color-body-light);
+}
+
+.btn-outline-view:hover {
+    background-color: var(--color-body-light);
+    border-color: var(--color-body-light);
+    color: white;
+}
+.btn-outline-edit {
+    color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.btn-outline-edit:hover {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.btn-outline-delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-delete:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+
+
+
+    
+
 .btn-back {
     
     border: 1.5px solid var(--color-primary);
@@ -449,11 +497,99 @@ h5, .h5 {
 .text-warning { color: var(--color-warning) !important; }
 .text-error { color: var(--color-error) !important; }
 
-.bg-primary { background-color: var(--color-primary) !important; }
-.bg-success { background-color: var(--color-success) !important; }
-.bg-warning { background-color: var(--color-warning) !important; }
-.bg-error { background-color: var(--color-error) !important; }
+.badge {
+    padding: 6px 12px;
+    font-weight: 500;
+    font-size: 12px;
+    border-radius: 16px;
+}
 
+.bg-primary { background-color: var(--color-primary) !important; }
+
+.bg-primary-badge { background-color: rgb(111, 72, 235, 0.1) !important;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 0.875rem;
+
+}
+
+.bg-instock{
+    background-color: rgba(18, 183, 106, 0.1) !important;
+        border: 1px solid var(--color-success);
+        color: var(--color-success);
+        font-size: 0.875rem;
+
+}
+
+.bg-outofstock{
+    background-color: rgb(217, 45, 32, 0.1) !important;
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    font-size: 0.875rem;
+}
+
+.bg-lowstock{
+    background-color: rgba(247, 144, 9, 0.1) !important;
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+
+.bg-success { 
+    
+        background-color: rgba(18, 183, 106, 0.1) !important;
+        border: 1px solid var(--color-success);
+        color: var(--color-success);
+        font-size: 0.875rem; /* Decreased text size */
+    
+    }
+.bg-unsucess-inactive {
+    background-color: rgb(113, 118, 128, 0.1) !important;
+    border: 1px solid var(--color-body-light);
+    color: var(--color-body-light);
+    font-size: 0.875rem;
+}
+.bg-archived {
+    background-color:rgb(217, 45, 32, 0.1) !important;
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    font-size: 0.875rem;
+}
+.bg-warning { background-color: var(--color-error, 0.1) !important; 
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+.bg-error { background-color: var(--color-warning, 0.1) !important; 
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    font-size: 0.875rem;}
+
+.bg-green-active {
+    background-color: var(--color-success, 0.1) !important;
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+    font-size: 0.875rem;
+}
+
+.bg-gray-inactive {
+    background-color: rgb(113, 118, 128, 18) !important;
+    border: 1px solid #717680;
+    color: #717680;
+    font-size: 0.875rem;
+}
+.bg-red-inactive {
+    background-color: rgba(217, 45, 32, 0.1) !important;
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    font-size: 0.875rem;
+}
+.bg-orange-inactive {
+    background-color: rgba(247, 144, 9, 0.1) !important;
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
 /* Responsive Styles
    ========================================================================== */
 /* Mobile devices (< 576px) */

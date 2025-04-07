@@ -1,111 +1,165 @@
 <%- include('../partials/messages') %>
 
-<div class="container-fluid py-4">
-    <div class="row">
-        <!-- Profile Information and Password Change Cards -->
-        <div class="col-12 mb-4">
-            <div class="row">
-                <!-- Profile Information -->
-                <div class="col-md-6 mb-4 mb-md-0">
-                    <div class="card h-100">
-                        <div class="card-header bg-light py-3">
-                            <h6 class="mb-0">Profile Information</h6>
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Profile Settings</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Profile Information -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/admin/profile/update" method="POST">
+                        <div class="mb-4">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="<%= admin.username %>" required>
                         </div>
-                        <div class="card-body">
-                            <form action="/admin/profile/update" method="POST">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="username" name="username" value="<%= admin.username %>" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" value="<%= admin.email %>" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Role</label>
-                                    <input type="text" class="form-control bg-light" value="<%= admin.role %>" readonly>
-                                </div>
-                                <% if (admin.roles && admin.roles.length > 0) { %>
-                                    <div class="mb-3">
-                                        <label class="form-label">Permissions</label>
-                                        <% admin.roles.forEach(role => { %>
-                                            <div class="card mb-2 bg-light">
-                                                <div class="card-body py-2">
-                                                    <h6 class="card-subtitle mb-2 text-muted"><%= role.name %></h6>
-                                                    <div class="permissions-list">
-                                                        <% role.permissions.forEach(permission => { %>
-                                                            <span class="badge bg-info me-1 mb-1"><%= permission %></span>
-                                                        <% }); %>
-                                                    </div>
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<%= admin.email %>" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Role</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-shield-lock text-primary"></i>
+                                </span>
+                                <input type="text" class="form-control bg-light" value="<%= admin.role %>" readonly>
+                            </div>
+                        </div>
+                        
+                        <% if (admin.roles && admin.roles.length > 0) { %>
+                            <div class="mb-4">
+                                <label class="form-label">Permissions</label>
+                                <div class="permissions-container">
+                                    <% admin.roles.forEach(role => { %>
+                                        <div class="permission-card mb-3">
+                                            <div class="permission-card-header">
+                                                <h6 class="mb-0"><%= role.name %></h6>
+                                            </div>
+                                            <div class="permission-card-body">
+                                                <div class="permission-badges">
+                                                    <% role.permissions.forEach(permission => { %>
+                                                        <span class="badge bg-primary-subtle text-primary me-1 mb-1">
+                                                            <%= permission.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') %>
+                                                        </span>
+                                                    <% }); %>
                                                 </div>
                                             </div>
-                                        <% }); %>
-                                    </div>
-                                <% } %>
-                                <button type="submit" class="btn btn-primary">Update Profile</button>
-                            </form>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        <% } %>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-shadow">
+                                Update Profile
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
+        </div>
 
-                <!-- Change Password -->
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-header bg-light py-3">
-                            <h6 class="mb-0">Change Password</h6>
+        <!-- Change Password -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Change Password</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/admin/profile/change-password" method="POST" id="changePasswordForm">
+                        <div class="mb-4">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-key text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <form action="/admin/profile/change-password" method="POST" id="changePasswordForm">
-                                <div class="mb-3">
-                                    <label for="currentPassword" class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="newPassword" class="form-label">New Password</label>
-                                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                                </div>
-                                <button type="submit" class="btn btn-warning">Change Password</button>
-                            </form>
+                        <div class="mb-4">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            </div>
                         </div>
-                    </div>
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-lock-fill text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-warning btn-shadow">
+                                Change Password
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
         <!-- Activity Log -->
         <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Activity Log</h6>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Activity Log</h5>
                     <div class="d-flex gap-2">
-                        <select class="form-select form-select-sm" id="activityTypeFilter" style="width: auto;">
-                            <option value="">All Activities</option>
-                            <option value="create">Created</option>
-                            <option value="update">Updated</option>
-                            <option value="delete">Deleted</option>
-                        </select>
-                        <select class="form-select form-select-sm" id="entityTypeFilter" style="width: auto;">
-                            <option value="">All Entities</option>
-                            <option value="product">Products</option>
-                            <option value="category">Categories</option>
-                            <option value="order">Orders</option>
-                            <option value="customer">Customers</option>
-                        </select>
+                        <div class="input-group input-group-sm" style="width: auto;">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-funnel text-muted"></i>
+                            </span>
+                            <select class="form-select" id="activityTypeFilter">
+                                <option value="">All Activities</option>
+                                <option value="create">Created</option>
+                                <option value="update">Updated</option>
+                                <option value="delete">Deleted</option>
+                            </select>
+                        </div>
+                        <div class="input-group input-group-sm" style="width: auto;">
+                            <span class="input-group-text bg-light">
+                                <i class="bi bi-tag text-muted"></i>
+                            </span>
+                            <select class="form-select" id="entityTypeFilter">
+                                <option value="">All Entities</option>
+                                <option value="product">Products</option>
+                                <option value="category">Categories</option>
+                                <option value="order">Orders</option>
+                                <option value="customer">Customers</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <th>Action</th>
-                                    <th>Entity Type</th>
-                                    <th>Details</th>
-                                    <th>Date & Time</th>
+                                    <th class="fw-semibold">Action</th>
+                                    <th class="fw-semibold">Entity Type</th>
+                                    <th class="fw-semibold">Details</th>
+                                    <th class="fw-semibold">Date & Time</th>
                                 </tr>
                             </thead>
                             <tbody id="activityLogTable">
@@ -113,18 +167,25 @@
                                     <% activityLogs.forEach(log => { %>
                                         <tr>
                                             <td>
-                                                <span class="badge <%= log.action === 'create' ? 'bg-success' : log.action === 'update' ? 'bg-info' : 'bg-danger' %>">
+                                                <span class="badge <%= log.action === 'create' ? 'bg-success text-success' : log.action === 'update' ? 'bg-orange-inactive text-error' : 'bg-warning text-warning' %>">
+                                                    <i class="bi bi-<%= log.action === 'create' ? 'plus-circle' : log.action === 'update' ? 'pencil' : 'trash' %> me-1"></i>
                                                     <%= log.action.charAt(0).toUpperCase() + log.action.slice(1) %>
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="text-capitalize"><%= log.entityType %></span>
+                                                <span class="text-capitalize">
+                                                    <i class="bi bi-<%= log.entityType === 'product' ? 'box' : log.entityType === 'category' ? 'tag' : log.entityType === 'order' ? 'cart' : 'person' %> me-1 text-muted"></i>
+                                                    <%= log.entityType %>
+                                                </span>
                                             </td>
                                             <td><%= log.details %></td>
                                             <td>
-                                                <div class="d-flex flex-column">
-                                                    <span><%= new Date(log.createdAt).toLocaleDateString() %></span>
-                                                    <small class="text-muted"><%= new Date(log.createdAt).toLocaleTimeString() %></small>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-calendar3 text-muted me-2"></i>
+                                                    <div>
+                                                        <span><%= new Date(log.createdAt).toLocaleDateString() %></span>
+                                                        <small class="text-muted d-block"><%= new Date(log.createdAt).toLocaleTimeString() %></small>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -132,7 +193,10 @@
                                 <% } else { %>
                                     <tr>
                                         <td colspan="4" class="text-center py-4">
-                                            <div class="text-muted">No activity logs found</div>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="bi bi-activity text-muted mb-2" style="font-size: 2rem;"></i>
+                                                <p class="text-muted mb-0">No activity logs found</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 <% } %>
@@ -144,6 +208,69 @@
         </div>
     </div>
 </div>
+
+<style>
+    .card-title {
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 6px;
+        border-color: #e5e7eb;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .input-group-text {
+        border-color: #e5e7eb;
+    }
+    
+    .permission-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .permission-card-header {
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .permission-card-body {
+        padding: 0.75rem 1rem;
+    }
+    
+    .permission-badges {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .badge {
+        font-weight: 500;
+        padding: 0.35rem 0.65rem;
+    }
+    
+    .form-actions {
+        margin-top: 1.5rem;
+    }
+    
+    .btn-shadow {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
 <script>
     // Password validation
@@ -176,4 +303,4 @@
             row.style.display = actionMatch && entityMatch ? '' : 'none';
         });
     }
-</script> 
+</script>

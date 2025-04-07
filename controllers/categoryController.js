@@ -23,6 +23,31 @@ export const renderCategoryManagement = async (req, res) => {
     }
 };
 
+// Render category view page
+export const renderCategoryView = async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id)
+            .populate('parent', 'name')
+            .populate('createdBy', 'username')
+            .populate('updatedBy', 'username');
+
+        if (!category) {
+            req.flash('error', 'Category not found');
+            return res.redirect('/admin/categories/manage');
+        }
+
+        res.render('admin/categories/view', {
+            title: 'View Category',
+            admin: req.session.admin,
+            category
+        });
+    } catch (error) {
+        console.error('Error viewing category:', error);
+        req.flash('error', 'Error loading category');
+        res.redirect('/admin/categories/manage');
+    }
+};
+
 // Render category edit page
 export const renderCategoryEdit = async (req, res) => {
     try {

@@ -632,16 +632,13 @@
                     <div class="collapse <%= path.startsWith('/admin/products') || path.startsWith('/admin/categories') ? 'show' : '' %>" id="managementSubmenu">
                         <a href="/admin/products/manage" class="nav-link <%= path === '/admin/products/manage' ? 'active' : '' %>">
                             <i class="bi bi-box"></i>
-                            <span>Product Management</span>
+                            <span>Product</span>
                         </a>
                         <a href="/admin/categories/manage" class="nav-link <%= path.startsWith('/admin/categories/manage') ? 'active' : '' %>">
                             <i class="bi bi-tags"></i>
-                            <span>Category Management</span>
+                            <span>Category</span>
                         </a>
-                        <a href="/admin/products" class="nav-link <%= path.startsWith('/admin/products') ? 'active' : '' %>">
-                            <i class="bi bi-box"></i>
-                            <span>Products</span>
-                        </a>
+                        
                        
                     </div>
                 </div>
@@ -799,7 +796,7 @@
 
             <!-- Page Content -->
             <div class="content-wrapper">
-                <%- body %>
+                <!-- <%- body %> -->
             </div>
         </div>
     </div>

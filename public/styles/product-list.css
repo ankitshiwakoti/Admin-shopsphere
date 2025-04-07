@@ -23,23 +23,10 @@
     padding: 6px 12px;
     font-weight: 500;
     font-size: 12px;
-    border-radius: 6px;
+    border-radius: 16px;
 }
 
-.badge.bg-success-subtle {
-    background-color: rgba(16, 185, 129, 0.1) !important;
-    color: rgb(16, 185, 129) !important;
-}
 
-.badge.bg-warning-subtle {
-    background-color: rgba(245, 158, 11, 0.1) !important;
-    color: rgb(245, 158, 11) !important;
-}
-
-.badge.bg-danger-subtle {
-    background-color: rgba(239, 68, 68, 0.1) !important;
-    color: rgb(239, 68, 68) !important;
-}
 
 /* Search Input */
 .input-group .input-group-text {
