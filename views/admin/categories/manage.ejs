@@ -1,20 +1,32 @@
 <%- contentFor('body') %>
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Category Management</h1>
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Category Management</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Categories</li>
+                </ol>
+            </nav>
+        </div>
         <button class="btn btn-primary btn-shadow" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
             <i class="fas fa-plus me-2"></i>Add Category
         </button>
     </div>
 
+
+
+
+
     <!-- Toast Container for Notifications -->
     <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 
     <!-- Category List Table -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 440px;">
                 <table class="table table-hover mb-0">
                     <thead class="sticky-top bg-white">
@@ -24,7 +36,7 @@
                             <th style="min-width: 170px;">Parent</th>
                             <th style="min-width: 200px;">Description</th>
                             <th style="min-width: 120px;">Status</th>
-                            <th style="min-width: 120px;">Actions</th>
+                            <th style="min-width: 170px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="categoryList">
@@ -37,21 +49,25 @@
                                     <td><%= category.description %></td>
                                     <td>
                                         <% if (category.status === 'active') { %>
-                                            <span class="alert alert-success py-1 px-2 mb-0">
+                                            <span class="badge bg-success">
                                                 <i class="bi bi-check-circle me-1"></i><%= category.status %>
                                             </span>
                                         <% } else { %>
-                                            <span class="alert alert-warning py-1 px-2 mb-0">
+                                            <span class="badge bg-unsucess-inactive">
                                                 <i class="bi bi-x-circle me-1"></i><%= category.status %>
                                             </span>
                                         <% } %>
                                     </td>
+                                    
                                     <td>
-                                        <a href="/admin/categories/<%= category._id %>/edit" class="action-icon edit" title="Edit Category">
+                                        <a href="/admin/categories/<%= category._id %>/view" class="btn btn-sm btn-icon btn-outline-view view-category" title="View Category">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/admin/categories/<%= category._id %>/edit" class="btn btn-sm btn-icon btn-outline-edit" title="Edit Category">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="/admin/categories/<%= category._id %>/delete" method="POST" class="d-inline">
-                                            <button type="submit" class="action-icon delete" title="Delete Category" onclick="return confirm('Are you sure you want to delete this category?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-outline-delete" title="Delete Category" onclick="return confirm('Are you sure you want to delete this category?')">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
@@ -67,20 +83,28 @@
                 </table>
             </div>
             
-            <!-- Pagination -->
-            <nav aria-label="Category table pagination" class="mt-3">
-                <ul class="pagination justify-content-end">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
+            <!-- Table Footer -->
+            <div class="d-flex align-items-center justify-content-end p-4 border-top">
+                <div class="d-flex align-items-center gap-3">
+                    <select class="form-select w-auto" id="rowsPerPage">
+                        <option value="10">10 rows</option>
+                        <option value="20">20 rows</option>
+                        <option value="50">50 rows</option>
+                    </select>
+                    
+                    <nav aria-label="Product table pagination">
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1"> <i class="fas fa-chevron-left"></i></a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#"> <i class="fas fa-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -121,11 +145,11 @@
                             <option value="inactive">Inactive</option>
                         </select>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Category</button>
-                    </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="createCategoryForm" class="btn btn-primary">Create Category</button>
             </div>
         </div>
     </div>
@@ -174,6 +198,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script>
 // Minimal JavaScript for handling form submissions and modals

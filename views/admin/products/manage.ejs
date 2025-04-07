@@ -1,13 +1,25 @@
 <%- contentFor('body') %>
 
+
 <div class="container-fluid px-4 py-3">
-    <!-- Page Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        
+
+     <!-- Page Header -->
+     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Product Management</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Product</li>
+                </ol>
+            </nav>
+        </div>
         <a href="/admin/products/create" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>New product
         </a>
     </div>
+
+ 
 
     <!-- Table Card -->
     <div class="card border-0 shadow-sm">
@@ -128,11 +140,11 @@
                                     <td><%= product.category ? product.category.name : 'N/A' %></td>
                                     <td>
                                         <% if (product.stock === 0) { %>
-                                            <span class="badge bg-danger-subtle text-danger">Out of stock</span>
+                                            <span class="badge bg-outofstock text-danger">Out of stock</span>
                                         <% } else if (product.stock <= 10) { %>
-                                            <span class="badge bg-warning-subtle text-warning">Low stock (<%= product.stock %>)</span>
+                                            <span class="badge bg-lowstock text-warning">Low stock (<%= product.stock %>)</span>
                                         <% } else { %>
-                                            <span class="badge bg-success-subtle text-success">In stock (<%= product.stock %>)</span>
+                                            <span class="badge bg-instock text-success">In stock (<%= product.stock %>)</span>
                                         <% } %>
                                     </td>
                                     <td>$<%= product.price.toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
@@ -140,26 +152,26 @@
                                         <% if(product.status === 'published') { %>
                                             <span class="badge bg-success">Published</span>
                                         <% } else if(product.status === 'draft') { %>
-                                            <span class="badge bg-warning">Draft</span>
+                                            <span class="badge bg-unsucess-inactive">Draft</span>
                                         <% } else { %>
-                                            <span class="badge bg-secondary">Archived</span>
+                                            <span class="badge bg-archived">Archived</span>
                                         <% } %>
                                     </td>
                                     <td class="pe-4">
                                         <div class="d-flex gap-2">
                                             <button type="button" 
-                                                    class="btn btn-sm btn-icon btn-outline-primary view-product" 
+                                                    class="btn btn-sm btn-icon btn-outline-view view-product" 
                                                     data-id="<%= product._id %>"
                                                     title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             <a href="/admin/products/edit/<%= product._id %>" 
-                                               class="btn btn-sm btn-icon btn-outline-primary" 
+                                               class="btn btn-sm btn-icon btn-outline-edit" 
                                                title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                             <button type="button" 
-                                                    class="btn btn-sm btn-icon btn-outline-danger delete-product" 
+                                                    class="btn btn-sm btn-icon btn-outline-delete delete-product" 
                                                     data-id="<%= product._id %>"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
@@ -184,7 +196,7 @@
             </div>
             
             <!-- Table Footer -->
-            <div class="d-flex align-items-center justify-content-between p-4 border-top">
+            <div class="d-flex align-items-center justify-content-end p-4 border-top">
                 <div class="d-flex align-items-center gap-3">
                     <select class="form-select w-auto" id="rowsPerPage">
                         <option value="10">10 rows</option>
@@ -229,7 +241,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                <h3 class="modal-title text-body" id="productDetailsModalLabel">Product Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -252,8 +264,8 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h4 id="productName"></h4>
-                        <p id="productShortDescription" class="text-muted"></p>
+                        <h5 id="productName" class="text-body"></h5>
+                        <p id="productShortDescription" class="text-body"></p>
                         <div class="mb-2">
                             <strong>Price:</strong> $<span id="productPrice"></span>
                         </div>
@@ -270,23 +282,23 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h5>Description</h5>
-                        <div id="productDescription"></div>
+                        <h5 class="text-body">Description</h5>
+                        <div id="productDescription" class="text-body"></div>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-6">
-                        <h5>Specifications</h5>
+                        <h5 class="text-body">Specifications</h5>
                         <div id="productSpecifications"></div>
                     </div>
                     <div class="col-md-6">
-                        <h5>Attributes</h5>
+                        <h5 class="text-body">Attributes</h5>
                         <div id="productAttributes"></div>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h5>Product History</h5>
+                        <h5 class="text-body">Product History</h5>
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <tbody>

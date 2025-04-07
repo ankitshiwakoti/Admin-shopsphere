@@ -35,6 +35,7 @@ router.post('/profile/change-password', isAdmin, adminController.changePassword)
 // ===== CATEGORY MANAGEMENT ROUTES =====
 // View routes
 router.get('/categories/manage', checkPermission('manage_categories'), categoryController.renderCategoryManagement);
+router.get('/categories/:id/view', checkPermission('manage_categories'), categoryController.renderCategoryView);
 router.get('/categories/:id/edit', checkPermission('manage_categories'), categoryController.renderCategoryEdit);
 
 // API routes

@@ -1,14 +1,23 @@
-<div class="content-wrapper">
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Customer Details</h1>
-                </div>
-               
+
+<div class="container-fluid px-4 py-3">
+   
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0 text-heading"> Customers Detail</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/customers">Customers</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Customers Detail</li>
+                    </ol>
+                </nav>
             </div>
+            
         </div>
-    </div>
+
+    
 
     <section class="content">
         <div class="container-fluid">
@@ -186,6 +195,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
 
                                             <!-- Order Details Modal -->
                                             <div class="modal fade" id="orderDetailsModal<%= order._id %>" tabindex="-1">
