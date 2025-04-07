@@ -17,15 +17,76 @@
         </button>
     </div>
 
-
-
-
-
     <!-- Toast Container for Notifications -->
     <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 
     <!-- Category List Table -->
     <div class="card shadow-sm border-0 mb-4">
+        <!-- Table Controls -->
+        <div class="p-4 border-bottom">
+            <div class="row g-3 align-items-center">
+                <!-- Left Controls -->
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Search categories..." id="searchInput">
+                    </div>
+                </div>
+                
+                <!-- Right Controls -->
+                <div class="col-12 col-sm-6 col-lg-8">
+                    <div class="d-flex gap-2 justify-content-sm-end">
+                        <!-- Status Filter -->
+                        <select class="form-select w-auto" id="statusFilter">
+                            <option value="">Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        <!-- Column Toggle -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-columns me-2"></i>Columns
+                            </button>
+                            <div class="dropdown-menu p-3" style="min-width: 200px;">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colName" checked>
+                                    <label class="form-check-label" for="colName">Name</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colSlug" checked>
+                                    <label class="form-check-label" for="colSlug">Slug</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colParent" checked>
+                                    <label class="form-check-label" for="colParent">Parent</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colDescription" checked>
+                                    <label class="form-check-label" for="colDescription">Description</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colStatus" checked>
+                                    <label class="form-check-label" for="colStatus">Status</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="colActions" checked>
+                                    <label class="form-check-label" for="colActions">Actions</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export -->
+                        <button class="btn btn-outline-secondary" id="exportButton">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 440px;">
                 <table class="table table-hover mb-0">
@@ -42,7 +103,7 @@
                     <tbody id="categoryList">
                         <% if (typeof categories !== 'undefined' && categories && categories.length > 0) { %>
                             <% categories.forEach(category => { %>
-                                <tr>
+                                <tr data-category-id="<%= category._id %>">
                                     <td><%= category.name %></td>
                                     <td><%= category.slug %></td>
                                     <td><%= category.parent ? category.parent.name : 'None' %></td>
@@ -92,7 +153,7 @@
                         <option value="50">50 rows</option>
                     </select>
                     
-                    <nav aria-label="Product table pagination">
+                    <nav aria-label="Category table pagination">
                         <ul class="pagination mb-0">
                             <li class="page-item disabled">
                                 <a class="page-link" href="#" tabindex="-1"> <i class="fas fa-chevron-left"></i></a>
@@ -199,28 +260,193 @@
     </div>
 </div>
 
-
-
 <script>
-// Minimal JavaScript for handling form submissions and modals
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle create category form submission
-    const createCategoryForm = document.getElementById('createCategoryForm');
-    if (createCategoryForm) {
-        createCategoryForm.addEventListener('submit', function(e) {
-            // Form will submit normally to the server
-            // No need for AJAX
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+
+    // Cache DOM elements
+    const table = document.querySelector('.table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr[data-category-id]')); // Only get category rows
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const rowsPerPageSelect = document.getElementById('rowsPerPage');
+    const exportButton = document.getElementById('exportButton');
+    
+    // Store original table data
+    const originalRows = rows.map(row => ({
+        element: row,
+        searchText: row.textContent.toLowerCase(),
+        status: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || ''
+    }));
+
+    // Handle search
+    function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+        originalRows.forEach(row => {
+            let show = row.searchText.includes(searchTerm);
+
+            // Apply status filter
+            if (statusValue && !row.status.includes(statusValue)) {
+                show = false;
+            }
+
+            row.element.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Show/hide no results message
+        const noResultsRow = tbody.querySelector('tr:not([data-category-id])');
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
+
+        updatePagination();
+    }
+
+    // Handle column visibility
+    const columnToggles = document.querySelectorAll('[id^="col"]');
+    columnToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const column = this.id.replace('col', '').toLowerCase();
+            let columnIndex;
+            
+            // Map column names to indices
+            switch(column) {
+                case 'name': columnIndex = 1; break;
+                case 'slug': columnIndex = 2; break;
+                case 'parent': columnIndex = 3; break;
+                case 'description': columnIndex = 4; break;
+                case 'status': columnIndex = 5; break;
+                case 'actions': columnIndex = 6; break;
+            }
+
+            if (columnIndex !== undefined) {
+                const cells = document.querySelectorAll(`td:nth-child(${columnIndex}), th:nth-child(${columnIndex})`);
+                cells.forEach(cell => {
+                    cell.style.display = this.checked ? '' : 'none';
+                });
+            }
+        });
+    });
+
+    // Handle export
+    exportButton.addEventListener('click', function() {
+        const visibleRows = originalRows.filter(row => row.element.style.display !== 'none');
+        if (visibleRows.length === 0) {
+            alert('No categories to export');
+            return;
+        }
+
+        const data = [];
+        visibleRows.forEach(row => {
+            const category = {
+                name: row.element.querySelector('td:nth-child(1)').textContent,
+                slug: row.element.querySelector('td:nth-child(2)').textContent,
+                parent: row.element.querySelector('td:nth-child(3)').textContent,
+                description: row.element.querySelector('td:nth-child(4)').textContent,
+                status: row.element.querySelector('td:nth-child(5) .badge').textContent.trim()
+            };
+            data.push(category);
+        });
+
+        // Convert to CSV
+        const csv = convertToCSV(data);
+        downloadCSV(csv, 'categories.csv');
+    });
+
+    function convertToCSV(data) {
+        const headers = Object.keys(data[0]);
+        const rows = data.map(obj => headers.map(header => obj[header]));
+        return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // Handle pagination
+    let currentPage = 1;
+    let rowsPerPage = parseInt(rowsPerPageSelect.value);
+
+    function updatePagination() {
+        const visibleRows = originalRows.filter(row => row.element.style.display !== 'none');
+        const totalRows = visibleRows.length;
+        
+        if (totalRows === 0) {
+            return;
+        }
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        currentPage = Math.min(currentPage, totalPages);
+        
+        // Update pagination UI
+        const pagination = document.querySelector('.pagination');
+        pagination.innerHTML = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a>
+            </li>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            pagination.innerHTML += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        pagination.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a>
+            </li>
+        `;
+
+        // Show only rows for current page
+        visibleRows.forEach((row, index) => {
+            const shouldShow = index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage;
+            row.element.style.display = shouldShow ? '' : 'none';
+        });
+
+        // Add click handlers to pagination
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (!isNaN(newPage) && newPage > 0 && newPage <= totalPages) {
+                    currentPage = newPage;
+                    updatePagination();
+                }
+            });
         });
     }
 
-    // Handle edit category form submission
-    const editCategoryForm = document.getElementById('editCategoryForm');
-    if (editCategoryForm) {
-        editCategoryForm.addEventListener('submit', function(e) {
-            // Form will submit normally to the server
-            // No need for AJAX
-        });
-    }
+    // Event listeners
+    searchInput.addEventListener('input', handleSearch);
+    statusFilter.addEventListener('change', handleSearch);
+    rowsPerPageSelect.addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1;
+        updatePagination();
+    });
+
+    // Initialize pagination
+    updatePagination();
 });
 </script>
 
