@@ -7,7 +7,8 @@ import {
     deleteProduct,
     renderProductManagement,
     renderProductCreation,
-    renderProductEdit
+    renderProductEdit,
+    getProductDetails
 } from '../controllers/productController.js';
 import { protect, authorize, checkPermission } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
@@ -33,6 +34,12 @@ router.get('/manage',
 router.get('/create',
     checkPermission('manage_products'),
     renderProductCreation
+);
+
+// View product details page
+router.get('/:id',
+    checkPermission('manage_products'),
+    getProductDetails
 );
 
 // Edit product page
@@ -65,7 +72,6 @@ router.post('/edit/:id',
 
 // API routes - These come after the specific routes
 router.get('/', getAllProducts);
-router.get('/:id', getProduct);
 
 // Delete product - Only Super Admin
 router.delete('/:id',
@@ -73,4 +79,4 @@ router.delete('/:id',
     deleteProduct
 );
 
-export default router; 
+export default router;
