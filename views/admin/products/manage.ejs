@@ -159,17 +159,16 @@
                                     </td>
                                     <td class="pe-4">
                                         <div class="d-flex gap-2">
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-icon btn-outline-view view-product" 
-                                                    data-id="<%= product._id %>"
-                                                    title="View Details">
+                                            <a href="/admin/products/view/<%= product._id %>" 
+                                               class="btn btn-sm btn-icon btn-outline-view" 
+                                               title="View Details">
                                                 <i class="fas fa-eye"></i>
-                                            </button>
+                                            </a>
                                             <a href="/admin/products/edit/<%= product._id %>" 
                                                class="btn btn-sm btn-icon btn-outline-edit" 
                                                title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                                <i class="fas fa-edit"></i>
+                                            </a>
                                             <button type="button" 
                                                     class="btn btn-sm btn-icon btn-outline-delete delete-product" 
                                                     data-id="<%= product._id %>"
@@ -231,102 +230,6 @@
             </div>
             <div class="modal-body">
                 <%- include('partials/productForm') %>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Product Details Modal -->
-<div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title text-body" id="productDetailsModalLabel">Product Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="product-images mb-3">
-                            <div id="productImageCarousel" class="carousel slide" data-bs-ride="carousel">
-                                <div class="carousel-inner" id="productImageCarouselInner">
-                                    <!-- Images will be loaded here -->
-                                </div>
-                                <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 id="productName" class="text-body"></h5>
-                        <p id="productShortDescription" class="text-body"></p>
-                        <div class="mb-2">
-                            <strong>Price:</strong> $<span id="productPrice"></span>
-                        </div>
-                        <div class="mb-2">
-                            <strong>Stock:</strong> <span id="productStock"></span>
-                        </div>
-                        <div class="mb-2">
-                            <strong>Category:</strong> <span id="productCategory"></span>
-                        </div>
-                        <div class="mb-2">
-                            <strong>Status:</strong> <span id="productStatus"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h5 class="text-body">Description</h5>
-                        <div id="productDescription" class="text-body"></div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h5 class="text-body">Specifications</h5>
-                        <div id="productSpecifications"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="text-body">Attributes</h5>
-                        <div id="productAttributes"></div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h5 class="text-body">Product History</h5>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 150px;">Created By:</th>
-                                        <td id="productCreatedBy">N/A</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Created At:</th>
-                                        <td id="productCreatedAt">N/A</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Last Updated By:</th>
-                                        <td id="productUpdatedBy">N/A</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Last Updated At:</th>
-                                        <td id="productUpdatedAt">N/A</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a href="#" id="editProductBtn" class="btn btn-primary">Edit Product</a>
             </div>
         </div>
     </div>
@@ -562,14 +465,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination
     updatePagination();
 
-    // View Product Details
-    document.querySelectorAll('.view-product').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.getAttribute('data-id');
-            fetchProductDetails(productId);
-        });
-    });
-
     // Delete Product
     let productToDelete = null;
     document.querySelectorAll('.delete-product').forEach(button => {
@@ -586,235 +481,6 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteProduct(productToDelete);
         }
     });
-
-    // Fetch Product Details
-    function fetchProductDetails(productId) {
-        console.log('Fetching product details for ID:', productId);
-        
-        // Log all product IDs in the table for comparison
-        const allProductIds = Array.from(document.querySelectorAll('tr[data-product-id]')).map(row => row.getAttribute('data-product-id'));
-        console.log('All product IDs in table:', allProductIds);
-        console.log('Product ID exists in table:', allProductIds.includes(productId));
-        
-        fetch(`/admin/products/view/${productId}`, {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                
-                // Handle 404 errors specifically
-                if (response.status === 404) {
-                    throw new Error('Product not found');
-                }
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.success) {
-                    // Check if the product has the required fields
-                    if (!data.product) {
-                        throw new Error('Product data is missing in the response');
-                    }
-                    
-                    // Ensure the product has the required fields for display
-                    const product = {
-                        ...data.product,
-                        name: data.product.name || 'N/A',
-                        shortDescription: data.product.shortDescription || 'N/A',
-                        description: data.product.description || 'No description available',
-                        price: data.product.price || 0,
-                        stock: data.product.stock || 0,
-                        status: data.product.status || 'draft',
-                        category: data.product.category || { name: 'N/A' },
-                        createdBy: data.product.createdBy || { username: 'N/A', email: 'N/A' },
-                        updatedBy: data.product.updatedBy || { username: 'N/A', email: 'N/A' },
-                        createdAt: data.product.createdAt || new Date(),
-                        updatedAt: data.product.updatedAt || new Date(),
-                        images: data.product.images || [],
-                        specifications: data.product.specifications || [],
-                        attributes: data.product.attributes || { color: [], size: [] }
-                    };
-                    
-                    displayProductDetails(product);
-                } else {
-                    alert('Error fetching product details: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if (error.message === 'Product not found') {
-                    alert('Product not found. It may have been deleted or the ID is invalid.');
-                } else {
-                    alert('Error fetching product details: ' + error.message);
-                }
-            });
-    }
-
-    // Display Product Details
-    function displayProductDetails(product) {
-        // Set basic info
-        document.getElementById('productName').textContent = product.name || 'N/A';
-        document.getElementById('productShortDescription').textContent = product.shortDescription || 'N/A';
-        document.getElementById('productPrice').textContent = product.price ? product.price.toFixed(2) : '0.00';
-        document.getElementById('productStock').textContent = product.stock || '0';
-        document.getElementById('productCategory').textContent = product.category ? product.category.name : 'N/A';
-        
-        // Set status badge
-        const statusBadge = document.getElementById('productStatus');
-        statusBadge.innerHTML = '';
-        let badgeClass = 'bg-secondary';
-        let statusText = 'Archived';
-        
-        if (product.status === 'published') {
-            badgeClass = 'bg-success';
-            statusText = 'Published';
-        } else if (product.status === 'draft') {
-            badgeClass = 'bg-warning';
-            statusText = 'Draft';
-        }
-        
-        const badge = document.createElement('span');
-        badge.className = `badge ${badgeClass}`;
-        badge.textContent = statusText;
-        statusBadge.appendChild(badge);
-        
-        // Set description
-        document.getElementById('productDescription').innerHTML = product.description || 'No description available';
-        
-        // Set created/updated info
-        const createdBy = product.createdBy ? `${product.createdBy.username} (${product.createdBy.email})` : 'N/A';
-        const updatedBy = product.updatedBy ? `${product.updatedBy.username} (${product.updatedBy.email})` : 'N/A';
-        const createdAt = product.createdAt ? new Date(product.createdAt).toLocaleString() : 'N/A';
-        const updatedAt = product.updatedAt ? new Date(product.updatedAt).toLocaleString() : 'N/A';
-        
-        document.getElementById('productCreatedBy').textContent = createdBy;
-        document.getElementById('productCreatedAt').textContent = createdAt;
-        document.getElementById('productUpdatedBy').textContent = updatedBy;
-        document.getElementById('productUpdatedAt').textContent = updatedAt;
-        
-        // Set specifications
-        const specsContainer = document.getElementById('productSpecifications');
-        specsContainer.innerHTML = '';
-        
-        if (product.specifications && product.specifications.length > 0) {
-            const table = document.createElement('table');
-            table.className = 'table table-sm table-bordered';
-            
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th>Key</th>
-                    <th>Value</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-            
-            const tbody = document.createElement('tbody');
-            product.specifications.forEach(spec => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${spec.key || 'N/A'}</td>
-                    <td>${spec.value || 'N/A'}</td>
-                `;
-                tbody.appendChild(row);
-            });
-            table.appendChild(tbody);
-            specsContainer.appendChild(table);
-        } else {
-            specsContainer.innerHTML = '<p class="text-muted">No specifications available</p>';
-        }
-        
-        // Set attributes
-        const attrsContainer = document.getElementById('productAttributes');
-        attrsContainer.innerHTML = '';
-        
-        if (product.attributes) {
-            const table = document.createElement('table');
-            table.className = 'table table-sm table-bordered';
-            
-            const tbody = document.createElement('tbody');
-            
-            // Colors
-            if (product.attributes.color && product.attributes.color.length > 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <th>Colors</th>
-                    <td>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${product.attributes.color.map(color => `
-                                <span class="badge bg-light text-dark">
-                                    <span class="color-swatch" style="background-color: ${getColorHex(color)};"></span>
-                                    ${color}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            }
-            
-            // Sizes
-            if (product.attributes.size && product.attributes.size.length > 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <th>Sizes</th>
-                    <td>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${product.attributes.size.map(size => `
-                                <span class="badge bg-light text-dark">${size}</span>
-                            `).join('')}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            }
-            
-            table.appendChild(tbody);
-            attrsContainer.appendChild(table);
-        } else {
-            attrsContainer.innerHTML = '<p class="text-muted">No attributes available</p>';
-        }
-        
-        // Set images
-        const carouselInner = document.getElementById('productImageCarouselInner');
-        carouselInner.innerHTML = '';
-        
-        if (product.images && product.images.length > 0) {
-            product.images.forEach((image, index) => {
-                const div = document.createElement('div');
-                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                div.innerHTML = `
-                    <img src="${image.url}" class="d-block w-100" alt="${product.name}">
-                `;
-                carouselInner.appendChild(div);
-            });
-        } else {
-            const div = document.createElement('div');
-            div.className = 'carousel-item active';
-            div.innerHTML = `
-                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
-                    <i class="fas fa-image text-muted fa-3x"></i>
-                </div>
-            `;
-            carouselInner.appendChild(div);
-        }
-        
-        // Set edit button link
-        document.getElementById('editProductBtn').href = `/admin/products/edit/${product._id}`;
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('productDetailsModal'));
-        modal.show();
-    }
 
     // Delete Product
     function deleteProduct(productId) {
