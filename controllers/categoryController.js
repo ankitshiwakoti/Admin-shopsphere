@@ -85,8 +85,8 @@ export const createCategory = async (req, res) => {
     try {
         const { name, description, parent, status } = req.body;
 
-        // If parent category is provided, validate it exists
-        if (parent) {
+        // If parent category is provided and not empty, validate it exists
+        if (parent && parent.trim() !== '') {
             const parentCategory = await Category.findById(parent);
             if (!parentCategory) {
                 return res.status(404).json({
@@ -100,7 +100,7 @@ export const createCategory = async (req, res) => {
         const category = new Category({
             name,
             description,
-            parent,
+            parent: parent && parent.trim() !== '' ? parent : null,
             status: status || 'active',
             createdBy: req.admin._id
         });
@@ -204,8 +204,8 @@ export const updateCategory = async (req, res) => {
             });
         }
 
-        // If parent category is being updated, validate it exists
-        if (parent) {
+        // If parent category is being updated and not empty, validate it exists
+        if (parent && parent.trim() !== '') {
             const parentCategory = await Category.findById(parent);
             if (!parentCategory) {
                 return res.status(404).json({
@@ -216,13 +216,12 @@ export const updateCategory = async (req, res) => {
         }
 
         // Update fields
-        Object.keys(req.body).forEach(key => {
-            if (key !== 'createdBy') {
-                category[key] = req.body[key];
-            }
-        });
-
+        category.name = name;
+        category.description = description;
+        category.parent = parent && parent.trim() !== '' ? parent : null;
+        category.status = status;
         category.updatedBy = req.admin._id;
+
         await category.save();
 
         // Create notification for other admins
