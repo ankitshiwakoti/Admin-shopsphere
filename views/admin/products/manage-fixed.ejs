@@ -1,8 +1,10 @@
 <%- contentFor('body') %>
 
+
 <div class="container-fluid px-4 py-3">
-    <!-- Page Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+
+     <!-- Page Header -->
+     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-heading">Product Management</h1>
             <nav aria-label="breadcrumb">
@@ -16,6 +18,8 @@
             <i class="fas fa-plus me-2"></i>New product
         </a>
     </div>
+
+ 
 
     <!-- Table Card -->
     <div class="card border-0 shadow-sm">
@@ -276,8 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         element: row,
         searchText: row.textContent.toLowerCase(),
         stock: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || '',
-        status: row.querySelector('td:nth-child(7) .badge')?.textContent.toLowerCase() || '',
-        isVisible: true // Add visibility flag
+        status: row.querySelector('td:nth-child(7) .badge')?.textContent.toLowerCase() || ''
     }));
     
     console.log('Original rows array length:', originalRows.length);
@@ -304,9 +307,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 show = false;
             }
 
-            // Update visibility flag instead of display style
-            row.isVisible = show;
+            // Just update the visibility state without actually changing display
             if (show) visibleCount++;
+            row.element.style.display = show ? '' : 'none';
         });
 
         console.log('Visible rows after filtering:', visibleCount);
@@ -404,8 +407,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Initial rows per page:', rowsPerPage);
 
     function updatePagination() {
-        // Get visible rows using visibility flag
-        const visibleRows = originalRows.filter(row => row.isVisible);
+        // Get visible rows (not filtered out)
+        const visibleRows = originalRows.filter(row => {
+            // Check if row is visible (not filtered out)
+            return !row.element.style.display || row.element.style.display !== 'none';
+        });
         
         const totalRows = visibleRows.length;
         const totalPages = Math.ceil(totalRows / rowsPerPage);
@@ -427,12 +433,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Show only rows for current page
-        visibleRows.forEach((row, index) => {
-            if (index >= startIndex && index < endIndex) {
-                row.element.style.display = '';
-                console.log('Showing row at index', index, 'with product ID:', row.element.getAttribute('data-product-id'));
+        for (let i = 0; i < visibleRows.length; i++) {
+            if (i >= startIndex && i < endIndex) {
+                visibleRows[i].element.style.display = '';
+                console.log('Showing row at index', i, 'with product ID:', visibleRows[i].element.getAttribute('data-product-id'));
             }
-        });
+        }
 
         // Show/hide no results message
         if (noResultsRow) {
@@ -513,9 +519,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize table - show all rows first
     function initializeTable() {
-        // Set all rows as visible initially
+        // Show all rows initially
         originalRows.forEach(row => {
-            row.isVisible = true;
             row.element.style.display = '';
         });
         

@@ -229,10 +229,13 @@ export const deleteProduct = async (req, res) => {
 // Render product management page
 export const renderProductManagement = async (req, res) => {
     try {
+        // Get all products without pagination
         const products = await Product.find()
             .populate('category')
             .populate('createdBy', 'username')
             .sort({ createdAt: -1 });
+            
+        console.log(`Server: Sending ${products.length} products to the client`);
             
         const categories = await Category.find();
         

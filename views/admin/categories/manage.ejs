@@ -269,20 +269,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cache DOM elements
     const table = document.querySelector('.table');
     const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr[data-category-id]')); // Only get category rows
+    const categoryRows = Array.from(tbody.querySelectorAll('tr[data-category-id]')); // Only get category rows
+    const noResultsRow = tbody.querySelector('tr:not([data-category-id])');
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const rowsPerPageSelect = document.getElementById('rowsPerPage');
     const exportButton = document.getElementById('exportButton');
     
+    // Log total number of categories from server
+    console.log('Total categories from server:', categoryRows.length);
+    
     // Store original table data
-    const originalRows = rows.map(row => ({
+    const originalRows = categoryRows.map(row => ({
         element: row,
         searchText: row.textContent.toLowerCase(),
-        status: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || ''
+        status: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || '',
+        isVisible: true // Add visibility flag
     }));
+    
+    console.log('Original rows array length:', originalRows.length);
 
-    // Handle search
+    // Handle search and filters
     function handleSearch() {
         const searchTerm = searchInput.value.toLowerCase();
         const statusValue = statusFilter.value.toLowerCase();
@@ -296,16 +303,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 show = false;
             }
 
-            row.element.style.display = show ? '' : 'none';
+            // Update visibility flag instead of display style
+            row.isVisible = show;
             if (show) visibleCount++;
         });
 
-        // Show/hide no results message
-        const noResultsRow = tbody.querySelector('tr:not([data-category-id])');
-        if (noResultsRow) {
-            noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
-        }
+        console.log('Visible rows after filtering:', visibleCount);
 
+        currentPage = 1; // Reset to first page when filtering
         updatePagination();
     }
 
@@ -313,21 +318,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const columnToggles = document.querySelectorAll('[id^="col"]');
     columnToggles.forEach(toggle => {
         toggle.addEventListener('change', function() {
-            const column = this.id.replace('col', '').toLowerCase();
+            const column = this.id.replace('col', '');
             let columnIndex;
             
             // Map column names to indices
-            switch(column) {
-                case 'name': columnIndex = 1; break;
-                case 'slug': columnIndex = 2; break;
-                case 'parent': columnIndex = 3; break;
-                case 'description': columnIndex = 4; break;
-                case 'status': columnIndex = 5; break;
-                case 'actions': columnIndex = 6; break;
+            switch(column.toLowerCase()) {
+                case 'name': columnIndex = 0; break;
+                case 'slug': columnIndex = 1; break;
+                case 'parent': columnIndex = 2; break;
+                case 'description': columnIndex = 3; break;
+                case 'status': columnIndex = 4; break;
+                case 'actions': columnIndex = 5; break;
             }
 
             if (columnIndex !== undefined) {
-                const cells = document.querySelectorAll(`td:nth-child(${columnIndex}), th:nth-child(${columnIndex})`);
+                const cells = document.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
                 cells.forEach(cell => {
                     cell.style.display = this.checked ? '' : 'none';
                 });
@@ -337,22 +342,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle export
     exportButton.addEventListener('click', function() {
-        const visibleRows = originalRows.filter(row => row.element.style.display !== 'none');
+        const visibleRows = originalRows.filter(row => row.isVisible);
         if (visibleRows.length === 0) {
             alert('No categories to export');
             return;
         }
 
-        const data = [];
-        visibleRows.forEach(row => {
-            const category = {
-                name: row.element.querySelector('td:nth-child(1)').textContent,
-                slug: row.element.querySelector('td:nth-child(2)').textContent,
-                parent: row.element.querySelector('td:nth-child(3)').textContent,
-                description: row.element.querySelector('td:nth-child(4)').textContent,
-                status: row.element.querySelector('td:nth-child(5) .badge').textContent.trim()
+        const data = visibleRows.map(row => {
+            const cells = row.element.querySelectorAll('td');
+            return {
+                name: cells[0].textContent,
+                slug: cells[1].textContent,
+                parent: cells[2].textContent,
+                description: cells[3].textContent,
+                status: cells[4].textContent.trim()
             };
-            data.push(category);
         });
 
         // Convert to CSV
@@ -383,52 +387,97 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle pagination
     let currentPage = 1;
     let rowsPerPage = parseInt(rowsPerPageSelect.value);
+    
+    console.log('Initial rows per page:', rowsPerPage);
 
     function updatePagination() {
-        const visibleRows = originalRows.filter(row => row.element.style.display !== 'none');
-        const totalRows = visibleRows.length;
+        // Get visible rows using visibility flag
+        const visibleRows = originalRows.filter(row => row.isVisible);
         
-        if (totalRows === 0) {
-            return;
+        const totalRows = visibleRows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        
+        console.log('Pagination update - Total rows:', totalRows, 'Rows per page:', rowsPerPage, 'Total pages:', totalPages, 'Current page:', currentPage);
+        
+        // Ensure current page is valid
+        currentPage = Math.max(1, Math.min(currentPage, totalPages || 1));
+        
+        // Calculate start and end indices for current page
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+        
+        console.log('Showing rows from index', startIndex, 'to', endIndex);
+        
+        // First hide all rows
+        originalRows.forEach(row => {
+            row.element.style.display = 'none';
+        });
+        
+        // Show only rows for current page
+        visibleRows.forEach((row, index) => {
+            if (index >= startIndex && index < endIndex) {
+                row.element.style.display = '';
+                console.log('Showing row at index', index, 'with category ID:', row.element.getAttribute('data-category-id'));
+            }
+        });
+
+        // Show/hide no results message
+        if (noResultsRow) {
+            noResultsRow.style.display = totalRows === 0 ? '' : 'none';
         }
 
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        currentPage = Math.min(currentPage, totalPages);
-        
         // Update pagination UI
         const pagination = document.querySelector('.pagination');
-        pagination.innerHTML = `
+        
+        // If we have fewer rows than the rows per page or only one page, show simplified pagination
+        if (totalRows <= rowsPerPage || totalPages <= 1) {
+            pagination.innerHTML = `
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                </li>
+            `;
+            return;
+        }
+        
+        // Otherwise, show full pagination
+        let paginationHTML = `
             <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a>
+                <a class="page-link" href="#" data-page="${currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
             </li>
         `;
 
+        // Add page numbers
         for (let i = 1; i <= totalPages; i++) {
-            pagination.innerHTML += `
+            paginationHTML += `
                 <li class="page-item ${currentPage === i ? 'active' : ''}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                 </li>
             `;
         }
 
-        pagination.innerHTML += `
+        paginationHTML += `
             <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a>
+                <a class="page-link" href="#" data-page="${currentPage + 1}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
             </li>
         `;
 
-        // Show only rows for current page
-        visibleRows.forEach((row, index) => {
-            const shouldShow = index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage;
-            row.element.style.display = shouldShow ? '' : 'none';
-        });
+        pagination.innerHTML = paginationHTML;
 
-        // Add click handlers to pagination
+        // Add click handlers to pagination links
         document.querySelectorAll('.page-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 const newPage = parseInt(this.dataset.page);
                 if (!isNaN(newPage) && newPage > 0 && newPage <= totalPages) {
+                    console.log('Pagination link clicked:', {newPage, currentPage, totalPages, linkText: this.textContent.trim()});
                     currentPage = newPage;
                     updatePagination();
                 }
@@ -439,14 +488,79 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners
     searchInput.addEventListener('input', handleSearch);
     statusFilter.addEventListener('change', handleSearch);
+    
+    // Handle rows per page change
     rowsPerPageSelect.addEventListener('change', function() {
         rowsPerPage = parseInt(this.value);
-        currentPage = 1;
+        console.log('Rows per page changed to:', rowsPerPage);
+        currentPage = 1; // Reset to first page
         updatePagination();
     });
 
-    // Initialize pagination
-    updatePagination();
+    // Initialize table - show all rows first
+    function initializeTable() {
+        // Set all rows as visible initially
+        originalRows.forEach(row => {
+            row.isVisible = true;
+            row.element.style.display = '';
+        });
+        
+        // Then apply pagination
+        updatePagination();
+    }
+    
+    // Call initialize function
+    initializeTable();
 });
 </script>
+
+<style>
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+.btn-outline-view {
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-view:hover {
+    color: #fff;
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-edit {
+    color: #198754;
+    border-color: #198754;
+}
+
+.btn-outline-edit:hover {
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-outline-delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-delete:hover {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.bg-unsucess-inactive {
+    background-color: #6c757d !important;
+}
+</style>
 
