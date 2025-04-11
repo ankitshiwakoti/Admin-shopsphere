@@ -9,11 +9,7 @@
     "create-admin": "node scripts/createAdmin.js",
     "seed-customers": "node scripts/seedCustomers.js",
     "seed-products": "node scripts/seedProducts.js",
-    "seed-orders": "node scripts/seedOrders.js",
-    "vercel-build": "node vercel-build.js"
-  },
-  "engines": {
-    "node": ">=14.x"
+    "seed-orders": "node scripts/seedOrders.js"
   },
   "keywords": [],
   "author": "",
