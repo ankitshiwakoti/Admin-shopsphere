@@ -15,6 +15,7 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('Created uploads directory');
 }
 
+
 // Log environment for debugging
 console.log('Node version:', process.version);
 console.log('Environment:', process.env.NODE_ENV);
