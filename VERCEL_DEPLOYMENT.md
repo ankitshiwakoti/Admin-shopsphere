@@ -13,8 +13,21 @@ This guide will help you deploy the ShopSphere Admin application to Vercel.
 ### 1. Prepare Your Project
 
 Make sure your project includes the following files:
-- `vercel.json` (already included in the repository)
+- `vercel.json` (configuration for Vercel)
 - `.env` file with your environment variables (see `.env.example` for reference)
+- `api/index.js` (entry point for Vercel serverless functions)
+
+Your project structure should include:
+```
+project/
+├── api/
+│   └── index.js  (Vercel entry point)
+├── public/       (Static assets)
+├── views/        (EJS templates)
+├── app.js        (Main application)
+├── vercel.json   (Vercel configuration)
+└── package.json  (Dependencies and scripts)
+```
 
 ### 2. Set Up MongoDB
 
@@ -34,11 +47,17 @@ Ensure you have a MongoDB database ready. If using MongoDB Atlas:
 3. Click "New Project"
 4. Import your repository
 5. Configure the project:
-   - Build Command: Leave default
+   - Framework Preset: Other
+   - Build Command: `npm run vercel-build` (creates necessary directories)
    - Output Directory: Leave default
    - Development Command: `npm run dev`
 6. Add Environment Variables:
-   - Add all variables from your `.env` file, especially `MONGODB_URI`
+   - Add all variables from your `.env` file, especially:
+     - `MONGODB_URI`: Your MongoDB connection string
+     - `SESSION_SECRET`: A random string for session security
+     - `JWT_SECRET`: A random string for JWT tokens
+     - `NODE_ENV`: Set to `production`
+     - `VERCEL`: Set to `true`
 7. Click "Deploy"
 
 #### Option 2: Using the Vercel CLI
@@ -62,16 +81,23 @@ Ensure you have a MongoDB database ready. If using MongoDB Atlas:
 4. Follow the prompts to configure your project
 5. Set your environment variables when prompted, or add them later in the Vercel dashboard
 
-### 4. Adding Environment Variables After Deployment
+### 4. Troubleshooting Common Deployment Issues
 
-If you need to add or update environment variables after deployment:
+#### My deployment fails with module import errors
 
-1. Go to the Vercel Dashboard
-2. Select your project
-3. Click on "Settings" > "Environment Variables"
-4. Add or update your variables
-5. Click "Save"
-6. Redeploy your application
+This can happen when there are issues with ES modules. Make sure:
+1. Your `package.json` has `"type": "module"` set
+2. All imports use the `.js` extension (e.g., `import x from './file.js'`)
+3. The Vercel build command creates any necessary directories
+
+#### My app deploys but shows a 500 error
+
+Check these common issues:
+1. MongoDB connection string is incorrect
+2. Environment variables are missing
+3. Files or directories referenced in the code don't exist in the Vercel environment
+
+To debug, check the function logs in your Vercel dashboard.
 
 ### 5. Handling File Uploads
 
@@ -88,16 +114,11 @@ You'll need to update your file upload logic in the application to use one of th
 1. **Serverless Functions**: Vercel runs Node.js apps as serverless functions with some limitations:
    - Maximum execution time of 10 seconds (on free plan)
    - Maximum payload size of 4.5MB
+   - Cold starts may cause the first request to be slower
 
 2. **File System**: The filesystem is read-only except for `/tmp`, which is temporary
 
 3. **WebSockets**: Not supported on the free plan
-
-## Troubleshooting
-
-- **Application Error**: Check the logs in your Vercel dashboard
-- **Connection Issues**: Ensure your MongoDB URI is correct and the IP is whitelisted
-- **Environment Variables**: Make sure all required variables are set
 
 ## Additional Resources
 
