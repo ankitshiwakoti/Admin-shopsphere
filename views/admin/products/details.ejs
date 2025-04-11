@@ -1,0 +1,290 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Product Details</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/products/manage">Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+                </ol>
+            </nav>
+        </div>
+       
+    </div>
+
+    <!-- Product Details Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <div class="row">
+                <!-- Basic Information -->
+                <div class="col-md-6 mb-4">
+                    <h5 class="text-heading mb-3">Basic Information</h5>
+                    <div class="info-section">
+                        <div class="info-item">
+                            <label>Product Name</label>
+                            <p><%= product.name %></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Short Description</label>
+                            <p><%= product.shortDescription || 'No short description available' %></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Price</label>
+                            <p>$<%= product.price.toLocaleString('en-US', {minimumFractionDigits: 2}) %></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Stock</label>
+                            <p>
+                                <% if (product.stock === 0) { %>
+                                    <span class="badge bg-outofstock text-danger">Out of stock</span>
+                                <% } else if (product.stock <= 10) { %>
+                                    <span class="badge bg-lowstock text-warning">Low stock (<%= product.stock %>)</span>
+                                <% } else { %>
+                                    <span class="badge bg-instock text-success">In stock (<%= product.stock %>)</span>
+                                <% } %>
+                            </p>
+                        </div>
+                        <div class="info-item">
+                            <label>Category</label>
+                            <p><%= product.category ? product.category.name : 'N/A' %></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Status</label>
+                            <p>
+                                <% if(product.status === 'published') { %>
+                                    <span class="badge bg-success">Published</span>
+                                <% } else if(product.status === 'draft') { %>
+                                    <span class="badge bg-unsucess-inactive">Draft</span>
+                                <% } else { %>
+                                    <span class="badge bg-archived">Archived</span>
+                                <% } %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Images -->
+                <div class="col-md-6 mb-4">
+                    <h5 class="text-heading mb-3">Product Images</h5>
+                    <div class="product-images">
+                        <% if(product.images && product.images.length > 0) { %>
+                            <div id="productImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <% product.images.forEach((image, index) => { %>
+                                        <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                            <img src="<%= image.url %>" class="d-block w-100" alt="<%= product.name %>">
+                                        </div>
+                                    <% }); %>
+                                </div>
+                                <% if(product.images.length > 1) { %>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                <% } %>
+                            </div>
+                        <% } else { %>
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <i class="fas fa-image text-muted fa-3x"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-heading mb-3">Description</h5>
+                    <div class="description-section">
+                        <%- product.description || 'No description available' %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specifications and Attributes -->
+            <div class="row mb-4">
+                <!-- Specifications -->
+                <div class="col-md-6 mb-4">
+                    <h5 class="text-heading mb-3">Specifications</h5>
+                    <div class="specifications-section">
+                        <% if(product.specifications && product.specifications.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% product.specifications.forEach(specifications => { %>
+                                            <tr>
+                                                <td><%= specifications.name || 'N/A' %></td>
+                                                <td><%= specifications.value || 'N/A' %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } else { %>
+                            <p class="text-muted">No specifications available</p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Attributes -->
+                <div class="col-md-6 mb-4">
+                    <h5 class="text-heading mb-3">Attributes</h5>
+                    <div class="attributes-section">
+                        <% if(product.attributes && (product.attributes.color || product.attributes.size)) { %>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <tbody>
+                                        <% if(product.attributes.color && product.attributes.color.length > 0) { %>
+                                            <tr>
+                                                <th style="width: 150px;">Colors</th>
+                                                <td>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <% product.attributes.color.forEach(color => { %>
+                                                            <span class="badge bg-light text-dark">
+                                                                <span class="color-swatch"></span>
+                                                                <%= color %>
+                                                            </span>
+                                                        <% }); %>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                        <% if(product.attributes.size && product.attributes.size.length > 0) { %>
+                                            <tr>
+                                                <th>Sizes</th>
+                                                <td>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <% product.attributes.size.forEach(size => { %>
+                                                            <span class="badge bg-light text-dark"><%= size %></span>
+                                                        <% }); %>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } else { %>
+                            <p class="text-muted">No attributes available</p>
+                        <% } %>
+                    </div>
+                </div>
+                
+            </div>
+
+            <!-- Additional Information -->
+            <div class="row">
+                <div class="col-12">
+                    <h5 class="text-heading mb-3">Additional Information</h5>
+                    <div class="additional-info-section">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 150px;">Created By:</th>
+                                        <td><%= product.createdBy ? product.createdBy.username : 'N/A' %></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Created At:</th>
+                                        <td><%= product.createdAt ? new Date(product.createdAt).toLocaleString() : 'N/A' %></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Updated By:</th>
+                                        <td><%= product.updatedBy ? product.updatedBy.username : 'N/A' %></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Updated At:</th>
+                                        <td><%= product.updatedAt ? new Date(product.updatedAt).toLocaleString() : 'N/A' %></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="/admin/products/manage" class="btn btn-secondary">
+                   Cancel
+                </a>
+                <a href="/admin/products/edit/<%= product._id %>" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Edit Product
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.info-item p {
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.description-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    min-height: 150px;
+}
+
+.product-images {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.product-images img {
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+</style>
+
+
+

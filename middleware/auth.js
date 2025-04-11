@@ -6,7 +6,17 @@ export const isAuthenticated = (req, res, next) => {
     if (req.session && req.session.isAdmin) {
         return next();
     }
-    req.flash('error_msg', 'Please log in to access this page');
+    
+    // Check if session exists but isAdmin is false (session expired)
+    if (req.session && !req.session.isAdmin) {
+        req.flash('error_msg', 'Your session has expired. Please login again.');
+    } else {
+        req.flash('error_msg', 'Please log in to access this page');
+    }
+    
+    // Clear session data but preserve flash messages
+    req.session.isAdmin = false;
+    req.session.adminId = null;
     res.redirect('/admin/login');
 };
 
@@ -29,110 +39,237 @@ export const authenticateToken = (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
     try {
+        // First check if user is authenticated
         if (!req.session.isAdmin) {
-            req.flash('error', 'Please login to access this page');
+            // Check if session exists but isAdmin is false (session expired)
+            if (req.session && !req.session.isAdmin) {
+                req.flash('error_msg', 'Your session has expired. Please login again.');
+            } else {
+                req.flash('error_msg', 'Please login to access this page');
+            }
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
             return res.redirect('/admin/login');
         }
 
         // Get admin from session
         const admin = await Admin.findById(req.session.adminId);
         if (!admin) {
-            req.flash('error', 'Admin not found');
+            req.flash('error_msg', 'Admin not found');
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
             return res.redirect('/admin/login');
         }
 
+        // Check if admin has admin or superadmin role
         if (admin.role !== 'admin' && admin.role !== 'superadmin') {
-            req.flash('error', 'You do not have permission to access this page');
-            return res.redirect('/admin/dashboard');
+            req.flash('error_msg', 'You do not have permission to access this page');
+            return res.redirect('/admin/unauthorized');
         }
 
+        // Add admin to request object
+        req.admin = admin;
         next();
     } catch (error) {
-        console.error('Admin middleware error:', error);
-        req.flash('error', 'Error checking admin status');
-        res.redirect('/admin/login');
+        console.error('Error in isAdmin middleware:', error);
+        req.flash('error_msg', 'An error occurred');
+        // Clear session data but preserve flash messages
+        req.session.isAdmin = false;
+        req.session.adminId = null;
+        return res.redirect('/admin/login');
     }
 };
 
-export const isSuperAdmin = (req, res, next) => {
-    if (!req.session.admin) {
-        req.flash('error', 'Please login to access this page');
+export const isSuperAdmin = async (req, res, next) => {
+    try {
+        // First check if user is authenticated
+        if (!req.session.isAdmin) {
+            // Check if session exists but isAdmin is false (session expired)
+            if (req.session && !req.session.isAdmin) {
+                req.flash('error_msg', 'Your session has expired. Please login again.');
+            } else {
+                req.flash('error_msg', 'Please login to access this page');
+            }
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
+            return res.redirect('/admin/login');
+        }
+
+        // Get admin from session
+        const admin = await Admin.findById(req.session.adminId);
+        if (!admin) {
+            req.flash('error_msg', 'Admin not found');
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
+            return res.redirect('/admin/login');
+        }
+
+        // Check if admin has superadmin role
+        if (admin.role !== 'superadmin') {
+            req.flash('error_msg', 'You do not have permission to access this page');
+            return res.redirect('/admin/unauthorized');
+        }
+
+        // Add admin to request object
+        req.admin = admin;
+        next();
+    } catch (error) {
+        console.error('Error in isSuperAdmin middleware:', error);
+        req.flash('error_msg', 'An error occurred');
+        // Clear session data but preserve flash messages
+        req.session.isAdmin = false;
+        req.session.adminId = null;
         return res.redirect('/admin/login');
     }
-
-    if (req.session.admin.role !== 'superadmin') {
-        req.flash('error', 'You do not have permission to access this page');
-        return res.redirect('/admin/dashboard');
-    }
-
-    next();
 };
 
 export const protect = async (req, res, next) => {
     try {
+        // Check if user is authenticated
         if (!req.session.isAdmin) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
+            // Check if session exists but isAdmin is false (session expired)
+            if (req.session && !req.session.isAdmin) {
+                req.flash('error_msg', 'Your session has expired. Please login again.');
+            } else {
+                req.flash('error_msg', 'Please login to access this resource');
+            }
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
+            return res.redirect('/admin/login');
         }
 
         // Get admin from session
-        const admin = await Admin.findById(req.session.adminId).select('-password');
+        const admin = await Admin.findById(req.session.adminId);
         if (!admin) {
-            return res.status(401).json({
-                success: false,
-                message: 'Admin not found'
-            });
+            req.flash('error_msg', 'Admin not found');
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
+            return res.redirect('/admin/login');
         }
 
+        // Add admin to request object
         req.admin = admin;
         next();
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        console.error('Error in protect middleware:', error);
+        req.flash('error_msg', 'An error occurred');
+        // Clear session data but preserve flash messages
+        req.session.isAdmin = false;
+        req.session.adminId = null;
+        return res.redirect('/admin/login');
     }
 };
 
 export const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.admin.role)) {
-            return res.status(403).json({
-                success: false,
-                message: `User role ${req.admin.role} is not authorized to access this route`
-            });
+    return async (req, res, next) => {
+        try {
+            // Check if user is authenticated
+            if (!req.session.isAdmin) {
+                // Check if session exists but isAdmin is false (session expired)
+                if (req.session && !req.session.isAdmin) {
+                    req.flash('error_msg', 'Your session has expired. Please login again.');
+                } else {
+                    req.flash('error_msg', 'Please login to access this resource');
+                }
+                // Clear session data but preserve flash messages
+                req.session.isAdmin = false;
+                req.session.adminId = null;
+                return res.redirect('/admin/login');
+            }
+
+            // Get admin from session
+            const admin = await Admin.findById(req.session.adminId);
+            if (!admin) {
+                req.flash('error_msg', 'Admin not found');
+                // Clear session data but preserve flash messages
+                req.session.isAdmin = false;
+                req.session.adminId = null;
+                return res.redirect('/admin/login');
+            }
+
+            // Check if admin has required role
+            if (!roles.includes(admin.role)) {
+                req.flash('error_msg', 'You do not have permission to perform this action');
+                return res.redirect('/admin/unauthorized');
+            }
+
+            // Add admin to request object
+            req.admin = admin;
+            next();
+        } catch (error) {
+            console.error('Error in authorize middleware:', error);
+            req.flash('error_msg', 'An error occurred');
+            // Clear session data but preserve flash messages
+            req.session.isAdmin = false;
+            req.session.adminId = null;
+            return res.redirect('/admin/login');
         }
-        next();
     };
 };
 
 export const checkPermission = (permission) => {
     return async (req, res, next) => {
         try {
-            // Super admin bypasses all permission checks
-            if (req.admin.role === 'superadmin') {
+            // Check if user is authenticated
+            if (!req.session.isAdmin) {
+                req.flash('error_msg', 'Please login to access this page');
+                return res.redirect('/admin/login');
+            }
+
+            // Get admin from session
+            const admin = await Admin.findById(req.session.adminId);
+            if (!admin) {
+                req.flash('error_msg', 'Admin not found');
+                return res.redirect('/admin/login');
+            }
+
+            // For superadmin, grant all permissions
+            if (admin.role === 'superadmin') {
+                req.admin = admin;
                 return next();
             }
 
-            const admin = await Admin.findById(req.admin._id).populate('roles');
-            const hasPermission = admin.roles.some(role => 
-                role.permissions.includes(permission)
-            );
+            // Check if admin has required permission through roles
+            let hasPermission = false;
+            
+            // Check if admin has the permission directly (if implemented in the future)
+            if (admin.permissions && admin.permissions.includes(permission)) {
+                hasPermission = true;
+            }
+            
+            // Check if any of the admin's roles have the permission
+            if (!hasPermission && admin.roles && admin.roles.length > 0) {
+                // Populate roles if they exist
+                const populatedAdmin = await Admin.findById(req.session.adminId).populate('roles');
+                
+                if (populatedAdmin.roles && populatedAdmin.roles.length > 0) {
+                    for (const role of populatedAdmin.roles) {
+                        if (role.permissions && role.permissions.includes(permission)) {
+                            hasPermission = true;
+                            break;
+                        }
+                    }
+                }
+            }
 
             if (!hasPermission) {
-                return res.status(403).json({
-                    success: false,
-                    message: `User does not have permission to ${permission}`
-                });
+                req.flash('error_msg', 'You do not have permission to access this page');
+                return res.redirect('/admin/unauthorized');
             }
+
+            // Add admin to request object
+            req.admin = admin;
             next();
         } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
+            console.error('Error in checkPermission middleware:', error);
+            req.flash('error_msg', 'An error occurred');
+            return res.redirect('/admin/login');
         }
     };
 }; 

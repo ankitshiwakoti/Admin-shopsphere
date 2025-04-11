@@ -1,0 +1,585 @@
+
+<div class="container-fluid px-4 py-3">
+   
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading"> Customers</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Customers</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal">
+            <i class="fas fa-plus me-2"></i> Add Customer
+        </button>
+    </div>
+
+
+<!-- Search and Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <!-- Search -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput" 
+                           placeholder="Search by name, email, or phone...">
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="col-md-8">
+                <div class="d-flex gap-2 justify-content-end">
+                    <select class="form-select w-auto" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+
+                    <select class="form-select w-auto" id="sortBy">
+                        <option value="name">Sort by Name</option>
+                        <option value="email">Sort by Email</option>
+                        <option value="joined">Sort by Date</option>
+                        <option value="status">Sort by Status</option>
+                    </select>
+
+                    <button class="btn btn-outline-primary" id="exportBtn">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="customersTable">
+            <thead class="bg-light">
+                <tr>
+                    <th style="width: 40px">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </div>
+                    </th>
+                    <th style="width: 50px"></th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th style="width: 100px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% customers.forEach(customer => { %>
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input customer-select" 
+                                       value="<%= customer._id %>">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="avatar avatar-sm rounded-circle">
+                                <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(customer.name) %>&background=random" 
+                                     alt="<%= customer.name %>" class="rounded-circle">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <h6 class="mb-0"><%= customer.name %></h6>
+                                <small class="text-muted customer-id">#<%= customer._id %></small>
+                            </div>
+                        </td>
+                        <td><%= customer.email %></td>
+                        <td><%= customer.phone %></td>
+                        <td>
+                            <span class="badge rounded-pill bg-<%= 
+                                customer.status === 'active' ? 'bg-success text-success' : 
+                                customer.status === 'suspended' ? 'bg-red-inactive text-danger' : 
+                                'bg-unsucess-inactive text-warning' 
+                            %> px-3 py-2">
+                                <i class="fas fa-circle me-1 fs-xs"></i>
+                                <%= customer.status %>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span><%= new Date(customer.createdAt).toLocaleDateString() %></span>
+                                <small class="text-muted">
+                                    <%= new Date(customer.createdAt).toLocaleTimeString() %>
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-icon btn-sm btn-ghost rounded-circle" 
+                                        data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/customers/<%= customer._id %>">
+                                            <i class="fas fa-eye me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item status-toggle"
+                                                data-id="<%= customer._id %>"
+                                                data-status="<%= customer.status === 'active' ? 'suspended' : 'active' %>">
+                                            <i class="fas fa-<%= customer.status === 'active' ? 'ban' : 'check' %> me-2"></i>
+                                            <%= customer.status === 'active' ? 'Suspend' : 'Activate' %>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Table Footer -->
+    <div class="card-footer bg-white py-3">
+        <div class="row align-items-center">
+            <div class="col">
+                <span class="text-muted" id="selectedCount">0 selected</span>
+            </div>
+            <div class="col-auto d-flex align-items-center gap-3">
+                <select class="form-select form-select-sm w-auto" id="pageSize">
+                    <option value="10">10 rows</option>
+                    <option value="25">25 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="100">100 rows</option>
+                </select>
+                
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" id="prevPageItem">
+                            <button class="page-link" id="prevPage">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <span class="page-link" id="currentPage">1</span>
+                        </li>
+                        <li class="page-item" id="nextPageItem">
+                            <button class="page-link" id="nextPage">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="customerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="customerForm" action="/admin/customers" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div class="toast align-items-center text-white bg-success border-0" id="successToast" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.825rem;
+    text-transform: uppercase;
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.table td {
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+
+.bg-success-subtle {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.bg-danger-subtle {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.bg-warning-subtle {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.btn-ghost {
+    background: transparent;
+    border: none;
+    color: #6c757d;
+}
+
+.btn-ghost:hover {
+    background-color: #f8f9fa;
+    color: #000;
+}
+
+.fs-xs {
+    font-size: 8px;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.dropdown-item i {
+    width: 16px;
+}
+
+.page-link {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    margin: 0 2px;
+    font-size: 0.875rem;
+}
+
+.toast {
+    border-radius: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap components
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+
+    const toastEl = document.getElementById('successToast');
+    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+
+    // Show success message
+    function showSuccess(message) {
+        document.getElementById('toastMessage').textContent = message;
+        toast.show();
+    }
+
+    // Initialize variables
+    let currentPage = 1;
+    let pageSize = 10;
+    let sortField = 'name';
+    let sortDirection = 'asc';
+    let customers = Array.from(document.querySelectorAll('tbody tr'));
+    let filteredCustomers = [...customers];
+
+    // Handle search
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', filterCustomers);
+
+    // Handle status filter
+    const statusFilter = document.getElementById('statusFilter');
+    statusFilter.addEventListener('change', filterCustomers);
+
+    // Handle sort
+    const sortBySelect = document.getElementById('sortBy');
+    sortBySelect.addEventListener('change', function() {
+        sortField = this.value;
+        sortCustomers();
+        displayCustomers();
+    });
+
+    // Handle page size
+    const pageSizeSelect = document.getElementById('pageSize');
+    pageSizeSelect.addEventListener('change', function() {
+        pageSize = parseInt(this.value);
+        currentPage = 1;
+        displayCustomers();
+    });
+
+    // Handle pagination
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            displayCustomers();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        const maxPage = Math.ceil(filteredCustomers.length / pageSize);
+        if (currentPage < maxPage) {
+            currentPage++;
+            displayCustomers();
+        }
+    });
+
+    // Handle select all
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.customer-select');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        updateSelectedCount();
+    });
+
+    // Handle individual selections
+    document.querySelectorAll('.customer-select').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    // Handle status toggle
+    document.querySelectorAll('.status-toggle').forEach(button => {
+        button.addEventListener('click', async function() {
+            const customerId = this.dataset.id;
+            const newStatus = this.dataset.status;
+            
+            try {
+                const response = await fetch(`/admin/customers/${customerId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    showSuccess(`Customer status updated to ${newStatus}`);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating customer status');
+            }
+        });
+    });
+
+    // Handle customer form submission
+    document.getElementById('customerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+
+            if (response.ok) {
+                showSuccess('Customer added successfully');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                throw new Error('Failed to add customer');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding customer');
+        }
+    });
+
+    // Handle export
+    document.getElementById('exportBtn').addEventListener('click', function() {
+        const selectedCustomers = Array.from(document.querySelectorAll('.customer-select:checked'))
+            .map(checkbox => {
+                const row = checkbox.closest('tr');
+                return {
+                    id: row.querySelector('.customer-id').textContent.substring(1),
+                    name: row.querySelector('h6').textContent,
+                    email: row.cells[3].textContent,
+                    phone: row.cells[4].textContent,
+                    status: row.cells[5].textContent.trim(),
+                    joined: row.cells[6].textContent
+                };
+            });
+
+        if (selectedCustomers.length === 0) {
+            alert('Please select customers to export');
+            return;
+        }
+
+        downloadCSV(convertToCSV(selectedCustomers), 'customers.csv');
+    });
+
+    // Filter customers
+    function filterCustomers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+
+        filteredCustomers = customers.filter(row => {
+            const text = row.textContent.toLowerCase();
+            const status = row.querySelector('.badge').textContent.trim().toLowerCase();
+            
+            const matchesSearch = text.includes(searchTerm);
+            const matchesStatus = !statusFilter || status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        currentPage = 1;
+        sortCustomers();
+        displayCustomers();
+    }
+
+    // Sort customers
+    function sortCustomers() {
+        filteredCustomers.sort((a, b) => {
+            let aValue, bValue;
+
+            switch (sortField) {
+                case 'name':
+                    aValue = a.querySelector('h6').textContent;
+                    bValue = b.querySelector('h6').textContent;
+                    break;
+                case 'email':
+                    aValue = a.cells[3].textContent;
+                    bValue = b.cells[3].textContent;
+                    break;
+                case 'joined':
+                    aValue = new Date(a.cells[6].textContent);
+                    bValue = new Date(b.cells[6].textContent);
+                    break;
+                case 'status':
+                    aValue = a.querySelector('.badge').textContent;
+                    bValue = b.querySelector('.badge').textContent;
+                    break;
+                default:
+                    aValue = a.textContent;
+                    bValue = b.textContent;
+            }
+
+            return sortDirection === 'asc' ? 
+                aValue > bValue ? 1 : -1 : 
+                aValue < bValue ? 1 : -1;
+        });
+    }
+
+    // Display customers
+    function displayCustomers() {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const maxPage = Math.ceil(filteredCustomers.length / pageSize);
+
+        // Hide all rows
+        customers.forEach(row => row.style.display = 'none');
+
+        // Show filtered rows for current page
+        filteredCustomers.slice(start, end).forEach(row => row.style.display = '');
+
+        // Update UI
+        document.getElementById('resultsCount').textContent = 
+            `Showing ${start + 1} to ${Math.min(end, filteredCustomers.length)} of ${filteredCustomers.length} customers`;
+        
+        document.getElementById('currentPage').textContent = currentPage;
+        document.getElementById('prevPageItem').classList.toggle('disabled', currentPage === 1);
+        document.getElementById('nextPageItem').classList.toggle('disabled', currentPage === maxPage);
+    }
+
+    // Update selected count
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.customer-select:checked').length;
+        document.getElementById('selectedCount').textContent = `${count} selected`;
+    }
+
+    // CSV Export helpers
+    function convertToCSV(arr) {
+        const array = [Object.keys(arr[0])].concat(arr);
+        return array.map(row => {
+            return Object.values(row)
+                .map(value => `"${value}"`)
+                .join(',');
+        }).join('\n');
+    }
+
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Initial display
+    displayCustomers();
+});
+</script> 

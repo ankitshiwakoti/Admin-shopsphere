@@ -1,0 +1,303 @@
+<%- include('../../partials/messages') %>
+
+<div class="container-fluid py-4 px-4">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Order Management</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Order Management</li>
+            </ol>
+        </nav>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="fas fa-file-export me-2"></i>Export Orders
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" class="form-control" name="search" value="<%= search %>" placeholder="Order number, customer name or email">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>Processing</option>
+                        <option value="shipped" <%= status === 'shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="delivered" <%= status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                        <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Items per page</label>
+                    <select class="form-select" name="limit">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Customer</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Payment Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.forEach(order => { %>
+                            <tr>
+                                <td>
+                                    <a href="/admin/orders/<%= order._id %>" class="text-primary fw-semibold">
+                                        <%= order.orderNumber %>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold"><%= order.customer.name %></span>
+                                        <small class="text-muted"><%= order.customer.email %></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold">$<%= order.totalAmount.toFixed(2) %></span>
+                                </td>
+                                <td>
+                                    <span class="badge <%= 
+                                        order.status === 'pending' ? 'bg-warning' :
+                                        order.status === 'processing' ? 'bg-info' :
+                                        order.status === 'shipped' ? 'bg-primary' :
+                                        order.status === 'delivered' ? 'bg-success' :
+                                        'bg-danger'
+                                    %>">
+                                        <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <%= 
+                                        order.paymentStatus === 'paid' ? 'bg-success' :
+                                        order.paymentStatus === 'pending' ? 'bg-warning' :
+                                        order.paymentStatus === 'refunded' ? 'bg-info' :
+                                        'bg-danger'
+                                    %>">
+                                        <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span><%= new Date(order.createdAt).toLocaleDateString() %></span>
+                                        <small class="text-muted"><%= new Date(order.createdAt).toLocaleTimeString() %></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-icon btn-sm btn-ghost rounded-circle" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="/admin/orders/<%= order._id %>">
+                                                    <i class="fas fa-eye me-2"></i>View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="/admin/orders/<%= order._id %>/invoice">
+                                                    <i class="fas fa-file-invoice me-2"></i>Generate Invoice
+                                                </a>
+                                            </li>
+                                            <% if (order.status !== 'cancelled' && order.status !== 'delivered') { %>
+                                                <li>
+                                                    <button class="dropdown-item text-danger" 
+                                                            onclick="cancelOrder('<%= order._id %>')">
+                                                        <i class="fas fa-times me-2"></i>Cancel Order
+                                                    </button>
+                                                </li>
+                                            <% } %>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="text-muted">No orders found</div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+            <div class="card-footer bg-white">
+                <nav class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        Showing <%= (currentPage - 1) * limit + 1 %> to <%= Math.min(currentPage * limit, totalOrders) %> of <%= totalOrders %> orders
+                    </div>
+                    <ul class="pagination mb-0">
+                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>&status=<%= status %>&search=<%= search %>">
+                                Previous
+                            </a>
+                        </li>
+                        <% for(let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&status=<%= status %>&search=<%= search %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                            <a class="page-link" href="?page=<%= currentPage + 1 %>&status=<%= status %>&search=<%= search %>">
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Orders</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm" action="/admin/orders/export" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" name="startDate" required>
+                            <span class="input-group-text">to</span>
+                            <input type="date" class="form-control" name="endDate" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="exportForm" class="btn btn-primary">Export</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cancelOrderForm">
+                    <div class="mb-3">
+                        <label class="form-label">Cancellation Reason</label>
+                        <textarea class="form-control" name="cancelReason" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="cancelOrderForm" class="btn btn-danger">Cancel Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle filter form submission
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const params = new URLSearchParams(formData);
+        window.location.href = `/admin/orders?${params.toString()}`;
+    });
+
+    // Handle filter form reset
+    document.getElementById('filterForm').addEventListener('reset', function() {
+        window.location.href = '/admin/orders';
+    });
+
+    // Handle order cancellation
+    let selectedOrderId = null;
+    
+    function cancelOrder(orderId) {
+        selectedOrderId = orderId;
+        const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+        modal.show();
+    }
+
+    document.getElementById('cancelOrderForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            const response = await fetch(`/admin/orders/${selectedOrderId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cancelReason: this.cancelReason.value
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error cancelling order');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error cancelling order');
+        }
+    });
+</script> 

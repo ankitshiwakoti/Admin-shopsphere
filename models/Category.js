@@ -56,4 +56,6 @@ categorySchema.index({ name: 1 });
 categorySchema.index({ slug: 1 });
 categorySchema.index({ status: 1 });
 
-export default mongoose.model('Category', categorySchema); 
+const Category = mongoose.model('Category', categorySchema);
+
+export default Category; 

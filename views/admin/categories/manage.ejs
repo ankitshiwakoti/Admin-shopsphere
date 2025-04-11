@@ -1,17 +1,93 @@
 <%- contentFor('body') %>
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Category Management</h1>
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Category Management</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Categories</li>
+                </ol>
+            </nav>
+        </div>
         <button class="btn btn-primary btn-shadow" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
             <i class="fas fa-plus me-2"></i>Add Category
         </button>
     </div>
 
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
     <!-- Category List Table -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
+    <div class="card shadow-sm border-0 mb-4">
+        <!-- Table Controls -->
+        <div class="p-4 border-bottom">
+            <div class="row g-3 align-items-center">
+                <!-- Left Controls -->
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Search categories..." id="searchInput">
+                    </div>
+                </div>
+                
+                <!-- Right Controls -->
+                <div class="col-12 col-sm-6 col-lg-8">
+                    <div class="d-flex gap-2 justify-content-sm-end">
+                        <!-- Status Filter -->
+                        <select class="form-select w-auto" id="statusFilter">
+                            <option value="">Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        <!-- Column Toggle -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-columns me-2"></i>Columns
+                            </button>
+                            <div class="dropdown-menu p-3" style="min-width: 200px;">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colName" checked>
+                                    <label class="form-check-label" for="colName">Name</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colSlug" checked>
+                                    <label class="form-check-label" for="colSlug">Slug</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colParent" checked>
+                                    <label class="form-check-label" for="colParent">Parent</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colDescription" checked>
+                                    <label class="form-check-label" for="colDescription">Description</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="colStatus" checked>
+                                    <label class="form-check-label" for="colStatus">Status</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="colActions" checked>
+                                    <label class="form-check-label" for="colActions">Actions</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export -->
+                        <button class="btn btn-outline-secondary" id="exportButton">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 440px;">
                 <table class="table table-hover mb-0">
                     <thead class="sticky-top bg-white">
@@ -21,34 +97,38 @@
                             <th style="min-width: 170px;">Parent</th>
                             <th style="min-width: 200px;">Description</th>
                             <th style="min-width: 120px;">Status</th>
-                            <th style="min-width: 120px;">Actions</th>
+                            <th style="min-width: 170px;">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <% if (typeof categories !== 'undefined' && categories) { %>
+                    <tbody id="categoryList">
+                        <% if (typeof categories !== 'undefined' && categories && categories.length > 0) { %>
                             <% categories.forEach(category => { %>
-                                <tr>
+                                <tr data-category-id="<%= category._id %>">
                                     <td><%= category.name %></td>
                                     <td><%= category.slug %></td>
                                     <td><%= category.parent ? category.parent.name : 'None' %></td>
                                     <td><%= category.description %></td>
                                     <td>
                                         <% if (category.status === 'active') { %>
-                                            <span class="alert alert-success py-1 px-2 mb-0">
+                                            <span class="badge bg-success">
                                                 <i class="bi bi-check-circle me-1"></i><%= category.status %>
                                             </span>
                                         <% } else { %>
-                                            <span class="alert alert-warning py-1 px-2 mb-0">
+                                            <span class="badge bg-unsucess-inactive">
                                                 <i class="bi bi-x-circle me-1"></i><%= category.status %>
                                             </span>
                                         <% } %>
                                     </td>
+                                    
                                     <td>
-                                        <a href="/admin/categories/<%= category._id %>/edit" class="action-icon edit" title="Edit Category">
+                                        <a href="/admin/categories/<%= category._id %>/view" class="btn btn-sm btn-icon btn-outline-view view-category" title="View Category">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/admin/categories/<%= category._id %>/edit" class="btn btn-sm btn-icon btn-outline-edit" title="Edit Category">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="/admin/categories/<%= category._id %>/delete" method="POST" class="d-inline">
-                                            <button type="submit" class="action-icon delete" title="Delete Category" onclick="return confirm('Are you sure you want to delete this category?')">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-outline-delete" title="Delete Category" onclick="return confirm('Are you sure you want to delete this category?')">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
@@ -64,20 +144,28 @@
                 </table>
             </div>
             
-            <!-- Pagination -->
-            <nav aria-label="Category table pagination" class="mt-3">
-                <ul class="pagination justify-content-end">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
+            <!-- Table Footer -->
+            <div class="d-flex align-items-center justify-content-end p-4 border-top">
+                <div class="d-flex align-items-center gap-3">
+                    <select class="form-select w-auto" id="rowsPerPage">
+                        <option value="10">10 rows</option>
+                        <option value="20">20 rows</option>
+                        <option value="50">50 rows</option>
+                    </select>
+                    
+                    <nav aria-label="Category table pagination">
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1"> <i class="fas fa-chevron-left"></i></a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#"> <i class="fas fa-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -91,7 +179,38 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <%- include('partials/categoryForm') %>
+                <form id="createCategoryForm" action="/admin/categories/create" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Parent Category</label>
+                        <select class="form-select" name="parent">
+                            <option value="">None</option>
+                            <% if (typeof categories !== 'undefined' && categories) { %>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>"><%= category.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="createCategoryForm" class="btn btn-primary">Create Category</button>
             </div>
         </div>
     </div>
@@ -143,131 +262,305 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    loadCategories();
-});
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
 
-async function loadCategories() {
-    try {
-        const response = await fetch('/admin/categories');
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Get the category list from the response
-        const categoryList = doc.querySelector('#categoryList');
-        if (categoryList) {
-            document.getElementById('categoryList').innerHTML = categoryList.innerHTML;
-        }
-        
-        // Get the category options for the parent dropdown
-        const parentOptions = doc.querySelector('select[name="parent"]').innerHTML;
-        document.querySelector('select[name="parent"]').innerHTML = parentOptions;
-    } catch (error) {
-        console.error('Error loading categories:', error);
-        showToast('Error loading categories', 'error');
-    }
-}
-
-// Form submission handlers
-document.getElementById('createCategoryForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
+    // Cache DOM elements
+    const table = document.querySelector('.table');
+    const tbody = table.querySelector('tbody');
+    const categoryRows = Array.from(tbody.querySelectorAll('tr[data-category-id]')); // Only get category rows
+    const noResultsRow = tbody.querySelector('tr:not([data-category-id])');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const rowsPerPageSelect = document.getElementById('rowsPerPage');
+    const exportButton = document.getElementById('exportButton');
     
-    try {
-        const response = await fetch('/admin/categories/create', {
-            method: 'POST',
-            body: formData
+    // Log total number of categories from server
+    console.log('Total categories from server:', categoryRows.length);
+    
+    // Store original table data
+    const originalRows = categoryRows.map(row => ({
+        element: row,
+        searchText: row.textContent.toLowerCase(),
+        status: row.querySelector('td:nth-child(5) .badge')?.textContent.toLowerCase() || '',
+        isVisible: true // Add visibility flag
+    }));
+    
+    console.log('Original rows array length:', originalRows.length);
+
+    // Handle search and filters
+    function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+
+        let visibleCount = 0;
+        originalRows.forEach(row => {
+            let show = row.searchText.includes(searchTerm);
+
+            // Apply status filter
+            if (statusValue && !row.status.includes(statusValue)) {
+                show = false;
+            }
+
+            // Update visibility flag instead of display style
+            row.isVisible = show;
+            if (show) visibleCount++;
         });
-        
-        if (response.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('createCategoryModal')).hide();
-            loadCategories();
-            showToast('Category created successfully', 'success');
-        } else {
-            const data = await response.json();
-            showToast(data.message || 'Error creating category', 'error');
-        }
-    } catch (error) {
-        console.error('Error creating category:', error);
-        showToast('Error creating category', 'error');
-    }
-});
 
-document.getElementById('editCategoryForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const categoryId = formData.get('id');
-    
-    try {
-        const response = await fetch(`/admin/categories/${categoryId}`, {
-            method: 'POST',
-            body: formData
+        console.log('Visible rows after filtering:', visibleCount);
+
+        currentPage = 1; // Reset to first page when filtering
+        updatePagination();
+    }
+
+    // Handle column visibility
+    const columnToggles = document.querySelectorAll('[id^="col"]');
+    columnToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const column = this.id.replace('col', '');
+            let columnIndex;
+            
+            // Map column names to indices
+            switch(column.toLowerCase()) {
+                case 'name': columnIndex = 0; break;
+                case 'slug': columnIndex = 1; break;
+                case 'parent': columnIndex = 2; break;
+                case 'description': columnIndex = 3; break;
+                case 'status': columnIndex = 4; break;
+                case 'actions': columnIndex = 5; break;
+            }
+
+            if (columnIndex !== undefined) {
+                const cells = document.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
+                cells.forEach(cell => {
+                    cell.style.display = this.checked ? '' : 'none';
+                });
+            }
         });
-        
-        if (response.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
-            loadCategories();
-            showToast('Category updated successfully', 'success');
-        } else {
-            const data = await response.json();
-            showToast(data.message || 'Error updating category', 'error');
-        }
-    } catch (error) {
-        console.error('Error updating category:', error);
-        showToast('Error updating category', 'error');
-    }
-});
-
-async function editCategory(id) {
-    try {
-        const response = await fetch(`/admin/categories/${id}/edit`);
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        const form = doc.getElementById('editCategoryForm');
-        if (form) {
-            document.getElementById('editCategoryForm').innerHTML = form.innerHTML;
-            new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
-        }
-    } catch (error) {
-        console.error('Error loading category:', error);
-        showToast('Error loading category', 'error');
-    }
-}
-
-function deleteCategory(id) {
-    if (confirm('Are you sure you want to delete this category?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/categories/${id}/delete`;
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type} align-items-center text-white border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-    
-    document.querySelector('.toast-container').appendChild(toast);
-    new bootstrap.Toast(toast).show();
-    
-    toast.addEventListener('hidden.bs.toast', () => {
-        toast.remove();
     });
-}
+
+    // Handle export
+    exportButton.addEventListener('click', function() {
+        const visibleRows = originalRows.filter(row => row.isVisible);
+        if (visibleRows.length === 0) {
+            alert('No categories to export');
+            return;
+        }
+
+        const data = visibleRows.map(row => {
+            const cells = row.element.querySelectorAll('td');
+            return {
+                name: cells[0].textContent,
+                slug: cells[1].textContent,
+                parent: cells[2].textContent,
+                description: cells[3].textContent,
+                status: cells[4].textContent.trim()
+            };
+        });
+
+        // Convert to CSV
+        const csv = convertToCSV(data);
+        downloadCSV(csv, 'categories.csv');
+    });
+
+    function convertToCSV(data) {
+        const headers = Object.keys(data[0]);
+        const rows = data.map(obj => headers.map(header => obj[header]));
+        return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // Handle pagination
+    let currentPage = 1;
+    let rowsPerPage = parseInt(rowsPerPageSelect.value);
+    
+    console.log('Initial rows per page:', rowsPerPage);
+
+    function updatePagination() {
+        // Get visible rows using visibility flag
+        const visibleRows = originalRows.filter(row => row.isVisible);
+        
+        const totalRows = visibleRows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        
+        console.log('Pagination update - Total rows:', totalRows, 'Rows per page:', rowsPerPage, 'Total pages:', totalPages, 'Current page:', currentPage);
+        
+        // Ensure current page is valid
+        currentPage = Math.max(1, Math.min(currentPage, totalPages || 1));
+        
+        // Calculate start and end indices for current page
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+        
+        console.log('Showing rows from index', startIndex, 'to', endIndex);
+        
+        // First hide all rows
+        originalRows.forEach(row => {
+            row.element.style.display = 'none';
+        });
+        
+        // Show only rows for current page
+        visibleRows.forEach((row, index) => {
+            if (index >= startIndex && index < endIndex) {
+                row.element.style.display = '';
+                console.log('Showing row at index', index, 'with category ID:', row.element.getAttribute('data-category-id'));
+            }
+        });
+
+        // Show/hide no results message
+        if (noResultsRow) {
+            noResultsRow.style.display = totalRows === 0 ? '' : 'none';
+        }
+
+        // Update pagination UI
+        const pagination = document.querySelector('.pagination');
+        
+        // If we have fewer rows than the rows per page or only one page, show simplified pagination
+        if (totalRows <= rowsPerPage || totalPages <= 1) {
+            pagination.innerHTML = `
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                </li>
+            `;
+            return;
+        }
+        
+        // Otherwise, show full pagination
+        let paginationHTML = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+
+        // Add page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <li class="page-item ${currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        paginationHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+
+        pagination.innerHTML = paginationHTML;
+
+        // Add click handlers to pagination links
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const newPage = parseInt(this.dataset.page);
+                if (!isNaN(newPage) && newPage > 0 && newPage <= totalPages) {
+                    console.log('Pagination link clicked:', {newPage, currentPage, totalPages, linkText: this.textContent.trim()});
+                    currentPage = newPage;
+                    updatePagination();
+                }
+            });
+        });
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', handleSearch);
+    statusFilter.addEventListener('change', handleSearch);
+    
+    // Handle rows per page change
+    rowsPerPageSelect.addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        console.log('Rows per page changed to:', rowsPerPage);
+        currentPage = 1; // Reset to first page
+        updatePagination();
+    });
+
+    // Initialize table - show all rows first
+    function initializeTable() {
+        // Set all rows as visible initially
+        originalRows.forEach(row => {
+            row.isVisible = true;
+            row.element.style.display = '';
+        });
+        
+        // Then apply pagination
+        updatePagination();
+    }
+    
+    // Call initialize function
+    initializeTable();
+});
 </script>
+
+<style>
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+.btn-outline-view {
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-view:hover {
+    color: #fff;
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-outline-edit {
+    color: #198754;
+    border-color: #198754;
+}
+
+.btn-outline-edit:hover {
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-outline-delete {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-delete:hover {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.bg-unsucess-inactive {
+    background-color: #6c757d !important;
+}
+</style>
 

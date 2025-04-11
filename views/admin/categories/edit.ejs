@@ -1,57 +1,105 @@
 <%- contentFor('body') %>
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Edit Category</h1>
-        <a href="/admin/categories/manage" class="btn btn-back btn-shadow">
-            <i class="fa-solid fa-chevron-left"></i> 
-        </a>
-
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Edit Category</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/categories/manage">Categories</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                </ol>
+            </nav>
+        </div>
         
     </div>
 
+       
+
     <!-- Edit Category Form -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <form action="/admin/categories/<%= category._id %>" method="POST">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <form action="/admin/categories/<%= category._id %>" method="POST" class="category-form">
                 <input type="hidden" name="_method" value="PATCH">
-                <div class="row">
+                
+                <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">Category Name</label>
-                            <input type="text" class="form-control" name="name" value="<%= category.name %>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3"><%= category.description %></textarea>
+                        <div class="form-section">
+                            <h5 class="mb-3">Basic Information</h5>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Category Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" value="<%= category.name %>" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="3"><%= category.description %></textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">Parent Category</label>
-                            <select class="form-select" name="parent">
-                                <option value="">None</option>
-                                <% categories.forEach(parent => { %>
-                                    <option value="<%= parent._id %>" <%= category.parent && category.parent._id.toString() === parent._id.toString() ? 'selected' : '' %>>
-                                        <%= parent.name %>
-                                    </option>
-                                <% }); %>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" name="status" required>
-                                <option value="active" <%= category.status === 'active' ? 'selected' : '' %>>Active</option>
-                                <option value="inactive" <%= category.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-                            </select>
+                        <div class="form-section">
+                            <h5 class="mb-3">Category Settings</h5>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Parent Category</label>
+                                <select class="form-select" name="parent">
+                                    <option value="">None</option>
+                                    <% categories.forEach(parent => { %>
+                                        <option value="<%= parent._id %>" <%= category.parent && category.parent._id.toString() === parent._id.toString() ? 'selected' : '' %>>
+                                            <%= parent.name %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" name="status" required>
+                                    <option value="active" <%= category.status === 'active' ? 'selected' : '' %>>Active</option>
+                                    <option value="inactive" <%= category.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary">Update Category</button>
+                
+                <div class="form-actions mt-4">
+                    <button type="submit" class="btn btn-primary btn-shadow">Update Category</button>
                 </div>
             </form>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+    .form-section {
+        background-color: #f9fafb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 6px;
+        border-color: #e5e7eb;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+</style> 

@@ -6,22 +6,44 @@ export const getRolesPage = async (req, res) => {
     try {
         console.log('Fetching roles page data...');
         
-        // Fetch all roles
-        const roles = await Role.find();
-        console.log('Roles fetched:', roles);
+        // Fetch all roles with populated assignedAdmins
+        const roles = await Role.find()
+            .populate('assignedAdmins', 'username email role')
+            .sort({ createdAt: -1 });
         
-        // Fetch all admins for role assignment
-        const admins = await Admin.find().select('username email');
-        console.log('Admins fetched:', admins);
+        console.log('Roles fetched:', roles.map(role => ({
+            name: role.name,
+            permissions: role.permissions,
+            adminCount: role.assignedAdmins.length
+        })));
+        
+        // Fetch all non-superadmin admins for role assignment
+        const admins = await Admin.find({ role: { $ne: 'superadmin' } })
+            .select('username email role')
+            .sort({ username: 1 });
+        
+        console.log('Admins fetched:', admins.map(admin => ({
+            username: admin.username,
+            email: admin.email,
+            role: admin.role
+        })));
+        
+        // Get the list of available permissions from the Role model
+        const availablePermissions = Role.schema.path('permissions.0').enumValues;
+        console.log('Available permissions:', availablePermissions);
         
         // Log the data being passed to the view
         const viewData = {
             title: 'Role Management',
             path: '/admin/roles',
             roles,
-            admins
+            admins,
+            availablePermissions,
+            messages: {
+                success: req.flash('success_msg'),
+                error: req.flash('error_msg')
+            }
         };
-        console.log('View data:', viewData);
         
         res.render('admin/roles', viewData);
     } catch (error) {

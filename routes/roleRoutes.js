@@ -1,5 +1,5 @@
 import express from 'express';
-import { isAdmin, isSuperAdmin } from '../middleware/auth.js';
+import { protect, isSuperAdmin } from '../middleware/auth.js';
 import {
     getRoles,
     createRole,
@@ -10,22 +10,22 @@ import {
 
 const router = express.Router();
 
-// All routes require admin authentication
-router.use(isAdmin);
+// Protected routes
+router.use(protect);
 
 // Get all roles (API endpoint)
-router.get('/api/roles', getRoles);
+router.get('/', isSuperAdmin, getRoles);
 
 // Get admins assigned to a role (API endpoint)
-router.get('/api/roles/:roleId/admins', getAssignedAdmins);
+router.get('/:roleId/admins', isSuperAdmin, getAssignedAdmins);
 
 // Create new role
-router.post('/roles', isSuperAdmin, createRole);
+router.post('/', isSuperAdmin, createRole);
 
 // Assign role to admin
-router.post('/roles/assign', isSuperAdmin, assignRole);
+router.post('/assign', isSuperAdmin, assignRole);
 
 // Remove role from admin
-router.post('/roles/remove', isSuperAdmin, removeRole);
+router.post('/remove', isSuperAdmin, removeRole);
 
 export default router; 
