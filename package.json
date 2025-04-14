@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "main": "app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node app.js",
+    "start:prod": "NODE_ENV=production node app.js",
     "dev": "nodemon app.js",
     "create-admin": "node scripts/createAdmin.js",
     "seed-customers": "node scripts/seedCustomers.js",
