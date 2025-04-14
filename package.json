@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node app.js",
-    "start:prod": "NODE_ENV=production node app.js",
+    "build": "npm install --omit=dev",
     "dev": "nodemon app.js",
     "create-admin": "node scripts/createAdmin.js",
     "seed-customers": "node scripts/seedCustomers.js",
