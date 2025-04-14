@@ -3,20 +3,20 @@ import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 
 export const isAuthenticated = (req, res, next) => {
-    if (req.session && req.session.isAdmin) {
+    if (req.session && req.session.adminId) {
         return next();
     }
     
-    // Check if session exists but isAdmin is false (session expired)
-    if (req.session && !req.session.isAdmin) {
-        req.flash('error_msg', 'Your session has expired. Please login again.');
-    } else {
-        req.flash('error_msg', 'Please log in to access this page');
+    // Check if it's an API/AJAX request
+    if (req.xhr || req.headers.accept?.includes('application/json')) {
+        return res.status(401).json({
+            success: false,
+            message: 'Please log in to continue'
+        });
     }
     
-    // Clear session data but preserve flash messages
-    req.session.isAdmin = false;
-    req.session.adminId = null;
+    // For regular requests, redirect to login
+    req.flash('error_msg', 'Please log in to access this resource');
     res.redirect('/admin/login');
 };
 
