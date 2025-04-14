@@ -1,0 +1,1411 @@
+<%- contentFor('body') %>
+
+<!-- Include Chart.js and DataTables -->
+<link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<div class="container-fluid px-4 py-3">
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-heading">Reports & Analytics</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Reports</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshAllReports()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh All
+            </button>
+            <button class="btn btn-primary" onclick="scheduleReport()">
+                <i class="bi bi-clock-history me-2"></i>Schedule Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-primary">
+                                <i class="bi bi-currency-dollar text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Today's Revenue</h6>
+                            <h3 class="mb-0" id="todayRevenue">$0.00</h3>
+                            <small class="text-muted" id="revenueChange">+0% from yesterday</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-success">
+                                <i class="bi bi-bag-check text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Today's Orders</h6>
+                            <h3 class="mb-0" id="todayOrders">0</h3>
+                            <small class="text-muted" id="ordersChange">+0% from yesterday</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-warning">
+                                <i class="bi bi-box text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Low Stock Items</h6>
+                            <h3 class="mb-0" id="lowStockCount">0</h3>
+                            <small class="text-muted">Items below threshold</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stats-icon bg-info">
+                                <i class="bi bi-people text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Active Customers</h6>
+                            <h3 class="mb-0" id="activeCustomers">0</h3>
+                            <small class="text-muted" id="customersChange">+0% this month</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Types Tabs -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#salesTab">
+                        <i class="bi bi-graph-up me-2"></i>Sales Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#inventoryTab">
+                        <i class="bi bi-box me-2"></i>Inventory Analysis
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#customerTab">
+                        <i class="bi bi-people me-2"></i>Customer Insights
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <!-- Sales Analytics Tab -->
+                <div class="tab-pane fade show active" id="salesTab">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <form id="salesReportForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Date Range</label>
+                                            <select class="form-select" name="dateRange">
+                                                <option value="today">Today</option>
+                                                <option value="week">This Week</option>
+                                                <option value="month">This Month</option>
+                                                <option value="year">This Year</option>
+                                                <option value="custom">Custom Range</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3 custom-date-range d-none">
+                                            <div class="mb-2">
+                                                <label class="form-label">Start Date</label>
+                                                <input type="date" class="form-control" name="startDate">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">End Date</label>
+                                                <input type="date" class="form-control" name="endDate">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Group By</label>
+                                            <select class="form-select" name="groupBy">
+                                                <option value="day">Day</option>
+                                                <option value="week">Week</option>
+                                                <option value="month">Month</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            Generate Report
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Sales by Category</h5>
+                                            <canvas id="categorySalesChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Payment Methods</h5>
+                                            <canvas id="paymentMethodsChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <canvas id="salesChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">Sales Summary</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Total Revenue</td>
+                                                    <td id="totalRevenue">$0.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Orders</td>
+                                                    <td id="totalOrders">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Average Order Value</td>
+                                                    <td id="avgOrderValue">$0.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Items Sold</td>
+                                                    <td id="totalItemsSold">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card border-0">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0">Detailed Sales Data</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="salesTable" class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Orders</th>
+                                                    <th>Revenue</th>
+                                                    <th>Avg. Order Value</th>
+                                                    <th>Items Sold</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="salesReportContent"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Analysis Tab -->
+                <div class="tab-pane fade" id="inventoryTab">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <form id="inventoryReportForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Report Type</label>
+                                            <select class="form-select" name="reportType">
+                                                <option value="current">Stock Levels</option>
+                                                <option value="low">Low Stock Alert</option>
+                                                <option value="movement">Stock Movement</option>
+                                                <option value="turnover">Inventory Turnover</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Category</label>
+                                            <select class="form-select" name="category">
+                                                <option value="all">All Categories</option>
+                                                <% if (locals.categories) { %>
+                                                    <% categories.forEach(category => { %>
+                                                        <option value="<%= category._id %>"><%= category.name %></option>
+                                                    <% }) %>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Sort By</label>
+                                            <select class="form-select" name="sortBy">
+                                                <option value="stock">Stock Level</option>
+                                                <option value="value">Inventory Value</option>
+                                                <option value="turnover">Turnover Rate</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-success w-100">
+                                            Generate Report
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Stock Levels</h5>
+                                            <canvas id="inventoryLevelChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Inventory Value</h5>
+                                            <canvas id="inventoryValueChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">Inventory Summary</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Total Inventory Value</td>
+                                                    <td id="totalInventoryValue">$0.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Low Stock Items</td>
+                                                    <td id="lowStockItems">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Average Stock Level</td>
+                                                    <td id="averageStockLevel">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total Products</td>
+                                                    <td id="totalProducts">0</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card border-0">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0">Inventory Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="inventoryTable" class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Category</th>
+                                                    <th>Stock Level</th>
+                                                    <th>Price</th>
+                                                    <th>Total Value</th>
+                                                    <th>Total Sold</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inventoryTableBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Insights Tab -->
+                <div class="tab-pane fade" id="customerTab">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <form id="customerReportForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Report Type</label>
+                                            <select class="form-select" name="reportType">
+                                                <option value="purchases">Purchase Analysis</option>
+                                                <option value="activity">Customer Activity</option>
+                                                <option value="demographics">Demographics</option>
+                                                <option value="retention">Retention Rate</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Time Period</label>
+                                            <select class="form-select" name="timePeriod">
+                                                <option value="30">Last 30 Days</option>
+                                                <option value="90">Last 90 Days</option>
+                                                <option value="180">Last 6 Months</option>
+                                                <option value="365">Last Year</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Segment By</label>
+                                            <select class="form-select" name="segmentBy">
+                                                <option value="spending">Spending Level</option>
+                                                <option value="frequency">Purchase Frequency</option>
+                                                <option value="recency">Last Purchase</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-info w-100 text-white">
+                                            Generate Report
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Customer Segments</h5>
+                                            <canvas id="customerSegmentsChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Customer Acquisition</h5>
+                                            <canvas id="acquisitionChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <canvas id="customerChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">Customer Summary</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Total Customers</td>
+                                                    <td id="totalCustomers">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Average Spent</td>
+                                                    <td id="avgCustomerSpent">$0.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Average Order Frequency</td>
+                                                    <td id="avgOrderFrequency">0 days</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card border-0">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0">Customer Analysis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="customerTable" class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Customer</th>
+                                                    <th>Total Orders</th>
+                                                    <th>Total Spent</th>
+                                                    <th>Avg. Order Value</th>
+                                                    <th>Order Frequency</th>
+                                                    <th>Last Purchase</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customerReportContent"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include necessary scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script>
+let salesChart, categorySalesChart, paymentMethodsChart, inventoryLevelChart, inventoryValueChart, customerSegmentsChart, acquisitionChart;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Initialize charts first
+        initializeCharts();
+        
+        // Initialize tables before loading data
+        initializeTables();
+        
+        // Load data
+        await Promise.all([
+            loadQuickStats(),
+            loadInitialReports()
+        ]);
+        
+        // Setup form handlers
+        setupFormHandlers();
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        showError('Failed to initialize the reports page. Please refresh the page.');
+    }
+});
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    errorDiv.innerHTML = `
+        <strong>Error!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container-fluid').prepend(errorDiv);
+}
+
+function initializeCharts() {
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                    padding: 15
+                }
+            }
+        }
+    };
+
+    // Initialize chart containers first
+    document.querySelectorAll('[id$="Chart"]').forEach(canvas => {
+        const container = canvas.parentElement;
+        container.classList.add('chart-container');
+        
+        if (canvas.id === 'salesChart') {
+            canvas.classList.add('large-chart');
+        } else {
+            canvas.classList.add('small-chart');
+        }
+    });
+
+    // Initialize Sales Charts
+    const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+    if (salesCtx) {
+        salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `$${value.toFixed(2)}`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
+    if (categorySalesCtx) {
+        categorySalesChart = new Chart(categorySalesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ]
+                }]
+            },
+            options: {
+                ...chartOptions
+            }
+        });
+    }
+
+    const paymentMethodsCtx = document.getElementById('paymentMethodsChart')?.getContext('2d');
+    if (paymentMethodsCtx) {
+        paymentMethodsChart = new Chart(paymentMethodsCtx, {
+            type: 'pie',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ]
+                }]
+            },
+            options: {
+                ...chartOptions
+            }
+        });
+    }
+
+    // Initialize Inventory Charts
+    const inventoryLevelCtx = document.getElementById('inventoryLevelChart')?.getContext('2d');
+    if (inventoryLevelCtx) {
+        inventoryLevelChart = new Chart(inventoryLevelCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Stock Level',
+                    data: [],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    const inventoryValueCtx = document.getElementById('inventoryValueChart')?.getContext('2d');
+    if (inventoryValueCtx) {
+        inventoryValueChart = new Chart(inventoryValueCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Inventory Value',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `$${value.toFixed(2)}`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize Customer Charts
+    const customerSegmentsCtx = document.getElementById('customerSegmentsChart')?.getContext('2d');
+    if (customerSegmentsCtx) {
+        customerSegmentsChart = new Chart(customerSegmentsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Value', 'Medium Value', 'Low Value'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(255, 99, 132, 0.2)'
+                    ]
+                }]
+            },
+            options: {
+                ...chartOptions
+            }
+        });
+    }
+
+    const acquisitionCtx = document.getElementById('customerChart')?.getContext('2d');
+    if (acquisitionCtx) {
+        acquisitionChart = new Chart(acquisitionCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'New Customers',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                ...chartOptions
+            }
+        });
+    }
+}
+
+function initializeTables() {
+    try {
+        const tableOptions = {
+            pageLength: 5,
+            lengthMenu: [5, 10, 25],
+            dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+            buttons: [
+                {
+                    extend: 'collection',
+                    text: 'Export',
+                    buttons: ['copy', 'csv', 'excel', 'pdf']
+                }
+            ],
+            scrollY: '300px',
+            scrollCollapse: true,
+            responsive: true,
+            order: [[0, 'desc']],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search...'
+            }
+        };
+
+        // Destroy existing instances
+        ['salesTable', 'inventoryTable', 'customerTable'].forEach(tableId => {
+            const existing = $(`#${tableId}`).DataTable();
+            if (existing) {
+                existing.destroy();
+            }
+            
+            // Initialize new instance
+            $(`#${tableId}`).DataTable(tableOptions);
+        });
+
+    } catch (error) {
+        console.error('Error initializing tables:', error);
+    }
+}
+
+async function loadInitialReports() {
+    try {
+        // Show loading state
+        document.querySelectorAll('.card-body').forEach(card => {
+            card.style.opacity = '0.5';
+        });
+
+        // Load initial sales report
+        const salesResponse = await fetch('/admin/reports/sales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dateRange: 'month',
+                groupBy: 'day'
+            })
+        });
+
+        if (!salesResponse.ok) throw new Error('Failed to load sales data');
+        const salesResult = await salesResponse.json();
+        if (salesResult.success) {
+            updateSalesChart(salesResult.data);
+        }
+
+        // Load initial inventory report
+        const inventoryResponse = await fetch('/admin/reports/inventory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reportType: 'current',
+                category: 'all',
+                sortBy: 'stock'
+            })
+        });
+
+        if (!inventoryResponse.ok) throw new Error('Failed to load inventory data');
+        const inventoryResult = await inventoryResponse.json();
+        if (inventoryResult.success) {
+            updateInventoryChart(inventoryResult.data);
+        }
+
+        // Load initial customer report
+        const customerResponse = await fetch('/admin/reports/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reportType: 'purchases',
+                timePeriod: '30',
+                segmentBy: 'spending'
+            })
+        });
+
+        if (!customerResponse.ok) throw new Error('Failed to load customer data');
+        const customerResult = await customerResponse.json();
+        if (customerResult.success) {
+            updateCustomerChart(customerResult.data);
+        }
+    } catch (error) {
+        console.error('Error loading initial reports:', error);
+        showError(error.message);
+    } finally {
+        // Restore opacity
+        document.querySelectorAll('.card-body').forEach(card => {
+            card.style.opacity = '1';
+        });
+    }
+}
+
+async function loadQuickStats() {
+    try {
+        const response = await fetch('/admin/reports/quick-stats');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to load quick stats');
+        }
+
+        const data = result.data;
+        
+        // Update quick stats cards with proper formatting
+        document.getElementById('todayRevenue').textContent = `$${data.todayRevenue.toFixed(2)}`;
+        document.getElementById('revenueChange').textContent = `${data.revenueChange}% from yesterday`;
+        document.getElementById('revenueChange').className = data.revenueChange >= 0 ? 'text-success' : 'text-danger';
+        
+        document.getElementById('todayOrders').textContent = data.todayOrders;
+        document.getElementById('ordersChange').textContent = `${data.ordersChange}% from yesterday`;
+        document.getElementById('ordersChange').className = data.ordersChange >= 0 ? 'text-success' : 'text-danger';
+        
+        document.getElementById('lowStockCount').textContent = data.lowStockCount;
+        if (data.lowStockCount > 0) {
+            document.getElementById('lowStockCount').parentElement.classList.add('text-warning');
+        }
+        
+        document.getElementById('activeCustomers').textContent = data.activeCustomers;
+        document.getElementById('customersChange').textContent = `${data.customerChange}% this month`;
+        document.getElementById('customersChange').className = data.customerChange >= 0 ? 'text-success' : 'text-danger';
+
+        // Log the data for debugging
+        console.log('Quick stats loaded:', data);
+    } catch (error) {
+        console.error('Error loading quick stats:', error);
+        // Show error message to user
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger mt-3';
+        errorMessage.textContent = 'Error loading quick stats. Please try again.';
+        document.querySelector('.container-fluid').prepend(errorMessage);
+    }
+}
+
+function setupFormHandlers() {
+    // Sales report form
+    document.getElementById('salesReportForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevent form submission
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        
+        try {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const response = await fetch('/admin/reports/sales', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                updateSalesChart(result.data);
+            } else {
+                throw new Error(result.message || 'Failed to generate sales report');
+            }
+        } catch (error) {
+            console.error('Error generating sales report:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorDiv.innerHTML = `
+                <strong>Error!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').prepend(errorDiv);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        }
+    });
+
+    // Inventory report form
+    document.getElementById('inventoryReportForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevent form submission
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        
+        try {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const response = await fetch('/admin/reports/inventory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                updateInventoryChart(result.data);
+            } else {
+                throw new Error(result.message || 'Failed to generate inventory report');
+            }
+        } catch (error) {
+            console.error('Error generating inventory report:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorDiv.innerHTML = `
+                <strong>Error!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').prepend(errorDiv);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        }
+    });
+
+    // Customer report form
+    document.getElementById('customerReportForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevent form submission
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        
+        try {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const response = await fetch('/admin/reports/customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                updateCustomerChart(result.data);
+            } else {
+                throw new Error(result.message || 'Failed to generate customer report');
+            }
+        } catch (error) {
+            console.error('Error generating customer report:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            errorDiv.innerHTML = `
+                <strong>Error!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').prepend(errorDiv);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        }
+    });
+
+    // Custom date range visibility
+    document.querySelector('select[name="dateRange"]').addEventListener('change', function() {
+        const customRange = document.querySelector('.custom-date-range');
+        customRange.classList.toggle('d-none', this.value !== 'custom');
+    });
+}
+
+function updateSalesChart(data) {
+    if (!data) {
+        console.error('No sales data received');
+        return;
+    }
+
+    try {
+        // Update summary statistics
+        if (data.summary) {
+            document.getElementById('totalRevenue').textContent = `$${(data.summary.totalRevenue || 0).toFixed(2)}`;
+            document.getElementById('totalOrders').textContent = data.summary.totalOrders || 0;
+            document.getElementById('avgOrderValue').textContent = `$${(data.summary.averageOrderValue || 0).toFixed(2)}`;
+            document.getElementById('totalItemsSold').textContent = data.summary.totalItemsSold || 0;
+        }
+
+        // Update main sales chart
+        if (data.salesData && salesChart) {
+            const labels = data.salesData.map(item => {
+                const date = new Date(item._id.year, item._id.month - 1, item._id.day);
+                return date.toLocaleDateString();
+            });
+
+            salesChart.data.labels = labels;
+            salesChart.data.datasets[0].data = data.salesData.map(item => item.totalSales || 0);
+            salesChart.update();
+        }
+
+        // Update category sales chart
+        if (data.categorySales && categorySalesChart) {
+            categorySalesChart.data.labels = data.categorySales.map(item => item._id || 'Unknown');
+            categorySalesChart.data.datasets[0].data = data.categorySales.map(item => item.totalSales || 0);
+            categorySalesChart.update();
+        }
+
+        // Update payment methods chart
+        if (data.paymentMethods && paymentMethodsChart) {
+            paymentMethodsChart.data.labels = data.paymentMethods.map(item => item._id || 'Unknown');
+            paymentMethodsChart.data.datasets[0].data = data.paymentMethods.map(item => item.count || 0);
+            paymentMethodsChart.update();
+        }
+
+        // Update sales table
+        const salesTableBody = document.getElementById('salesReportContent');
+        if (salesTableBody && data.salesData) {
+            salesTableBody.innerHTML = '';
+            data.salesData.forEach(item => {
+                const date = new Date(item._id.year, item._id.month - 1, item._id.day);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${date.toLocaleDateString()}</td>
+                    <td>${item.orderCount || 0}</td>
+                    <td>$${(item.totalSales || 0).toFixed(2)}</td>
+                    <td>$${(item.avgOrderValue || 0).toFixed(2)}</td>
+                    <td>${item.itemsSold || 0}</td>
+                `;
+                salesTableBody.appendChild(row);
+            });
+        }
+    } catch (error) {
+        console.error('Error updating sales charts:', error);
+        showError('Failed to update sales charts');
+    }
+}
+
+function updateInventoryChart(data) {
+    if (!data) {
+        console.error('No inventory data received');
+        return;
+    }
+
+    try {
+        // Update summary statistics
+        if (data.summary) {
+            document.getElementById('totalInventoryValue').textContent = `$${(data.summary.totalValue || 0).toFixed(2)}`;
+            document.getElementById('lowStockItems').textContent = data.summary.lowStockCount || 0;
+            document.getElementById('averageStockLevel').textContent = (data.summary.averageStock || 0).toFixed(2);
+            document.getElementById('totalProducts').textContent = data.summary.totalProducts || 0;
+        }
+
+        // Update inventory level chart
+        if (data.inventoryData && inventoryLevelChart) {
+            inventoryLevelChart.data.labels = data.inventoryData.map(item => item.name || 'Unknown');
+            inventoryLevelChart.data.datasets[0].data = data.inventoryData.map(item => item.stock || 0);
+            inventoryLevelChart.update();
+        }
+
+        // Update inventory value chart
+        if (data.inventoryData && inventoryValueChart) {
+            inventoryValueChart.data.labels = data.inventoryData.map(item => item.name || 'Unknown');
+            inventoryValueChart.data.datasets[0].data = data.inventoryData.map(item => item.totalValue || 0);
+            inventoryValueChart.update();
+        }
+
+        // Update inventory table
+        const tableBody = document.getElementById('inventoryTableBody');
+        if (tableBody && data.inventoryData) {
+            tableBody.innerHTML = '';
+            data.inventoryData.forEach(item => {
+                const status = getStockStatus(item.stock || 0);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name || 'Unknown'}</td>
+                    <td>${item.category || 'Uncategorized'}</td>
+                    <td>${item.stock || 0}</td>
+                    <td>$${(item.price || 0).toFixed(2)}</td>
+                    <td>$${(item.totalValue || 0).toFixed(2)}</td>
+                    <td>${item.totalSold || 0}</td>
+                    <td><span class="badge bg-${status.color}">${status.label}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    } catch (error) {
+        console.error('Error updating inventory charts:', error);
+        showError('Failed to update inventory charts');
+    }
+}
+
+function updateCustomerChart(data) {
+    if (!data) {
+        console.error('No customer data received');
+        return;
+    }
+
+    try {
+        // Update summary statistics
+        if (data.summary) {
+            document.getElementById('totalCustomers').textContent = data.summary.totalCustomers || 0;
+            document.getElementById('avgCustomerSpent').textContent = `$${(data.summary.averageSpent || 0).toFixed(2)}`;
+            document.getElementById('avgOrderFrequency').textContent = `${((data.summary.averageOrderFrequency || 0) / (1000 * 60 * 60 * 24)).toFixed(1)} days`;
+        }
+
+        // Update customer segments chart
+        if (data.segments && customerSegmentsChart) {
+            customerSegmentsChart.data.datasets[0].data = [
+                data.segments.highValue || 0,
+                data.segments.mediumValue || 0,
+                data.segments.lowValue || 0
+            ];
+            customerSegmentsChart.update();
+        }
+
+        // Update acquisition chart
+        if (data.acquisitionData && acquisitionChart) {
+            acquisitionChart.data.labels = data.acquisitionData.map(item => 
+                `${item._id.year}-${String(item._id.month).padStart(2, '0')}`
+            );
+            acquisitionChart.data.datasets[0].data = data.acquisitionData.map(item => item.count || 0);
+            acquisitionChart.update();
+        }
+
+        // Update customer table
+        const tableBody = document.getElementById('customerReportContent');
+        if (tableBody && data.customerData) {
+            tableBody.innerHTML = '';
+            data.customerData.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${customer.name || 'Unknown'}</td>
+                    <td>${customer.totalOrders || 0}</td>
+                    <td>$${(customer.totalSpent || 0).toFixed(2)}</td>
+                    <td>$${(customer.averageOrderValue || 0).toFixed(2)}</td>
+                    <td>${((customer.orderFrequency || 0) / (1000 * 60 * 60 * 24)).toFixed(1)} days</td>
+                    <td>${customer.lastPurchase ? new Date(customer.lastPurchase).toLocaleDateString() : 'Never'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    } catch (error) {
+        console.error('Error updating customer charts:', error);
+        showError('Failed to update customer charts');
+    }
+}
+
+function getStockStatus(stock) {
+    if (stock <= 5) return { color: 'danger', label: 'Critical' };
+    if (stock <= 10) return { color: 'warning', label: 'Low' };
+    if (stock <= 20) return { color: 'info', label: 'Moderate' };
+    return { color: 'success', label: 'Good' };
+}
+
+function getCustomerStatus(customer) {
+    if (!customer.totalOrders) return { color: 'secondary', label: 'New' };
+    if (customer.totalOrders > 10) return { color: 'success', label: 'VIP' };
+    if (customer.totalOrders > 5) return { color: 'primary', label: 'Regular' };
+    return { color: 'info', label: 'Occasional' };
+}
+
+function viewCustomer(customerId) {
+    window.location.href = `/admin/customers/${customerId}`;
+}
+
+function manageStock(productId) {
+    window.location.href = `/admin/products/${productId}`;
+}
+
+function refreshAllReports() {
+    document.getElementById('salesReportForm').dispatchEvent(new Event('submit'));
+    document.getElementById('inventoryReportForm').dispatchEvent(new Event('submit'));
+    document.getElementById('customerReportForm').dispatchEvent(new Event('submit'));
+}
+
+function scheduleReport() {
+    alert('Report scheduling feature coming soon!');
+}
+
+// Add this new function to handle table updates properly
+function updateTable(tableId, data, columns) {
+    try {
+        const table = $(`#${tableId}`).DataTable();
+        table.clear();
+        if (data && data.length > 0) {
+            table.rows.add(data).draw();
+        }
+    } catch (error) {
+        console.error(`Error updating table ${tableId}:`, error);
+    }
+}
+</script>
+
+<style>
+/* Base styles */
+.container-fluid {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Chart container fixes */
+.chart-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Fixed height for different chart types */
+.chart-container canvas {
+    max-height: 300px !important;
+}
+
+.small-chart {
+    height: 200px !important;
+}
+
+.large-chart {
+    height: 300px !important;
+}
+
+/* Card fixes */
+.card {
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 1.25rem;
+    overflow: hidden;
+}
+
+/* Table container fixes */
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    max-height: 400px;
+}
+
+/* DataTables fixes */
+.dataTables_wrapper {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.dataTables_scrollBody {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    border: none !important;
+}
+
+.dataTables_scrollHead {
+    overflow: hidden !important;
+    border: none !important;
+}
+
+/* Tab content fixes */
+.tab-content {
+    overflow: hidden;
+}
+
+.tab-pane {
+    padding: 1rem 0;
+}
+
+/* Row fixes */
+.row {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .chart-container canvas {
+        max-height: 250px !important;
+    }
+    
+    .small-chart {
+        height: 150px !important;
+    }
+    
+    .large-chart {
+        height: 250px !important;
+    }
+}
+
+/* Keep your existing styles below */
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-icon i {
+    font-size: 24px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    padding: 1rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    background: none;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Loading state styling */
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2rem;
+    height: 2rem;
+    margin: -1rem 0 0 -1rem;
+    border: 0.25rem solid #f3f3f3;
+    border-top: 0.25rem solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style> 

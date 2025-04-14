@@ -47,11 +47,24 @@
                                 <span class="badge <%= 
                                     order.status === 'pending' ? 'bg-warning' :
                                     order.status === 'processing' ? 'bg-info' :
-                                    order.status === 'shipped' ? 'bg-primary' :
-                                    order.status === 'delivered' ? 'bg-success' :
+                                    order.status === 'completed' ? 'bg-success' :
                                     'bg-danger'
                                 %>">
                                     <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Order Status</label>
+                            <div>
+                                <span class="badge <%= 
+                                    order.orderStatus === 'pending' ? 'bg-warning' :
+                                    order.orderStatus === 'processing' ? 'bg-info' :
+                                    order.orderStatus === 'shipped' ? 'bg-primary' :
+                                    order.orderStatus === 'delivered' ? 'bg-success' :
+                                    'bg-danger'
+                                %>">
+                                    <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
                                 </span>
                             </div>
                         </div>
@@ -98,23 +111,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% order.products.forEach(item => { %>
+                            <% order.items.forEach(item => { %>
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="<%= item.product.images[0] %>" 
+                                            <img src="<%= item.product.images[0].url %>" 
                                                  alt="<%= item.product.name %>"
                                                  class="rounded"
                                                  width="48">
                                             <div class="ms-3">
                                                 <div class="fw-semibold"><%= item.product.name %></div>
-                                                <small class="text-muted">SKU: <%= item.product.sku %></small>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="text-end">$<%= item.price.toFixed(2) %></td>
                                     <td class="text-center"><%= item.quantity %></td>
-                                    <td class="text-end">$<%= item.total.toFixed(2) %></td>
+                                    <td class="text-end">$<%= (item.price * item.quantity).toFixed(2) %></td>
                                 </tr>
                             <% }); %>
                         </tbody>
@@ -139,7 +151,7 @@
                             </tr>
                             <tr>
                                 <td colspan="3" class="text-end fw-bold">Total:</td>
-                                <td class="text-end fw-bold">$<%= order.totalAmount.toFixed(2) %></td>
+                                <td class="text-end fw-bold">$<%= order.total.toFixed(2) %></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -156,20 +168,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-lg me-3">
-                            <img src="<%= order.customer.avatar || '/images/default-avatar.png' %>" 
-                                 alt="<%= order.customer.name %>"
-                                 class="rounded-circle"
-                                 width="64"
-                                 height="64">
-                        </div>
                         <div>
-                            <h6 class="mb-1"><%= order.customer.name %></h6>
-                            <div class="text-muted"><%= order.customer.email %></div>
-                            <div class="text-muted"><%= order.customer.phone %></div>
+                            <h6 class="mb-1"><%= order.user.name %></h6>
+                            <div class="text-muted"><%= order.user.email %></div>
+                            <div class="text-muted"><%= order.user.phone %></div>
                         </div>
                     </div>
-                    <a href="/admin/customers/<%= order.customer._id %>" class="btn btn-outline-primary btn-sm w-100">
+                    <a href="/admin/customers/<%= order.user._id %>" class="btn btn-outline-primary btn-sm w-100">
                         View Customer Profile
                     </a>
                 </div>
@@ -182,35 +187,15 @@
                 </div>
                 <div class="card-body">
                     <address class="mb-0">
-                        <%= order.shippingAddress.street %><br>
-                        <% if (order.shippingAddress.street2) { %>
-                            <%= order.shippingAddress.street2 %><br>
-                        <% } %>
-                        <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipCode %><br>
+                        <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %><br>
+                        <%= order.shippingAddress.zipCode %><br>
                         <%= order.shippingAddress.country %>
                     </address>
                 </div>
             </div>
 
-            <!-- Billing Address -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Billing Address</h5>
-                </div>
-                <div class="card-body">
-                    <address class="mb-0">
-                        <%= order.billingAddress.street %><br>
-                        <% if (order.billingAddress.street2) { %>
-                            <%= order.billingAddress.street2 %><br>
-                        <% } %>
-                        <%= order.billingAddress.city %>, <%= order.billingAddress.state %> <%= order.billingAddress.zipCode %><br>
-                        <%= order.billingAddress.country %>
-                    </address>
-                </div>
-            </div>
-
             <!-- Update Status -->
-            <% if (order.status !== 'cancelled' && order.status !== 'delivered') { %>
+            <% if (order.status !== 'cancelled' && order.orderStatus !== 'delivered') { %>
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Update Status</h5>
@@ -218,22 +203,27 @@
                     <div class="card-body">
                         <form id="updateStatusForm">
                             <div class="mb-3">
-                                <label class="form-label">Order Status</label>
+                                <label class="form-label">Status</label>
                                 <select class="form-select" name="status" required>
                                     <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
                                     <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Processing</option>
-                                    <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-                                    <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                                    <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                                    <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Order Status</label>
+                                <select class="form-select" name="orderStatus" required>
+                                    <option value="pending" <%= order.orderStatus === 'pending' ? 'selected' : '' %>>Pending</option>
+                                    <option value="processing" <%= order.orderStatus === 'processing' ? 'selected' : '' %>>Processing</option>
+                                    <option value="shipped" <%= order.orderStatus === 'shipped' ? 'selected' : '' %>>Shipped</option>
+                                    <option value="delivered" <%= order.orderStatus === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                                    <option value="cancelled" <%= order.orderStatus === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Tracking Number</label>
                                 <input type="text" class="form-control" name="trackingNumber" value="<%= order.trackingNumber || '' %>">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Estimated Delivery Date</label>
-                                <input type="date" class="form-control" name="estimatedDeliveryDate" 
-                                       value="<%= order.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate).toISOString().split('T')[0] : '' %>">
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Update Status</button>
                         </form>
@@ -256,7 +246,7 @@
                 <form id="cancelOrderForm">
                     <div class="mb-3">
                         <label class="form-label">Cancellation Reason</label>
-                        <textarea class="form-control" name="cancelReason" rows="3" required></textarea>
+                        <textarea class="form-control" name="notes" rows="3" required></textarea>
                     </div>
                 </form>
             </div>
@@ -281,8 +271,8 @@
                 },
                 body: JSON.stringify({
                     status: this.status.value,
-                    trackingNumber: this.trackingNumber.value,
-                    estimatedDeliveryDate: this.estimatedDeliveryDate.value
+                    orderStatus: this.orderStatus.value,
+                    trackingNumber: this.trackingNumber.value
                 })
             });
 
@@ -315,7 +305,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    cancelReason: this.cancelReason.value
+                    notes: this.notes.value
                 })
             });
 

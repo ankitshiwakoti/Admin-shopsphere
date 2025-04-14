@@ -2,14 +2,124 @@ import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
+import Order from '../models/Order.js';
+import Customer from '../models/Customer.js';
 import { notifyAdmins } from './notificationController.js';
 
 // Get admin dashboard
-export const getDashboard = (req, res) => {
-    res.render('admin/dashboard', {
-        title: 'Admin Dashboard',
-        admin: req.session.admin
-    });
+export const getDashboard = async (req, res) => {
+    // Define default statuses at the top of the function so it's available in both try and catch blocks
+    const defaultStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    
+    try {
+        // Get date ranges
+        const today = new Date();
+        const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        // Get counts
+        const products = await Product.countDocuments();
+        const customers = await Customer.countDocuments();
+        const orders = await Order.countDocuments();
+
+        // Get revenue statistics
+        const todayRevenue = await Order.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startOfToday }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$total' }
+                }
+            }
+        ]);
+
+        const monthlyRevenue = await Order.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$total' }
+                }
+            }
+        ]);
+
+        // Get recent orders with customer data - using 'user' instead of 'customer'
+        const recentOrders = await Order.find()
+            .populate('user', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        // Get order status distribution with default values
+        const orderStatusResult = await Order.aggregate([
+            {
+                $group: {
+                    _id: '$orderStatus', // Using orderStatus field from schema
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Create a map of all possible statuses with default counts
+        const orderStatus = defaultStatuses.map(status => {
+            const found = orderStatusResult.find(result => result._id === status);
+            return {
+                _id: status,
+                count: found ? found.count : 0
+            };
+        });
+
+        // Get low stock products
+        const lowStockProducts = await Product.find({ stock: { $lt: 10 } })
+            .select('name stock price')
+            .limit(5);
+
+        const data = {
+            counts: {
+                products,
+                customers,
+                orders
+            },
+            revenue: {
+                today: todayRevenue[0]?.total || 0,
+                monthly: monthlyRevenue[0]?.total || 0
+            },
+            recentOrders,
+            charts: {
+                orderStatus
+            },
+            lowStockProducts
+        };
+
+        res.render('admin/dashboard', {
+            title: 'Admin Dashboard',
+            admin: req.session.admin,
+            data
+        });
+    } catch (error) {
+        console.error('Error getting dashboard stats:', error);
+        req.flash('error_msg', 'Error loading dashboard data');
+        res.render('admin/dashboard', {
+            title: 'Admin Dashboard',
+            admin: req.session.admin,
+            data: {
+                counts: { products: 0, customers: 0, orders: 0 },
+                revenue: { today: 0, monthly: 0 },
+                recentOrders: [],
+                charts: {
+                    orderStatus: defaultStatuses.map(status => ({ _id: status, count: 0 }))
+                },
+                lowStockProducts: []
+            }
+        });
+    }
 };
 
 // Get admin list

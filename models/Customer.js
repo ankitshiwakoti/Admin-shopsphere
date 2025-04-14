@@ -1,19 +1,26 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const customerSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true, 'Name is required'],
+        trim: true
     },
     email: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, 'Email is required'],
+        unique: true,
+        trim: true,
+        lowercase: true,
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address']
     },
-    phone: {
+    password: {
         type: String,
-        required: true
+        required: [true, 'Password is required'],
+        minlength: [6, 'Password must be at least 6 characters long']
     },
+    // Address fields - optional initially, will be collected during checkout
     address: {
         street: String,
         city: String,
@@ -21,26 +28,36 @@ const customerSchema = new mongoose.Schema({
         zipCode: String,
         country: String
     },
-    status: {
-        type: String,
-        enum: ['active', 'inactive', 'blocked'],
-        default: 'active'
+    phone: String,
+    isActive: {
+        type: Boolean,
+        default: true
     },
     createdAt: {
         type: Date,
         default: Date.now
     },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+    lastLogin: Date
+}, {
+    timestamps: true
+});
+
+// Hash password before saving
+customerSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
     }
 });
 
-// Update the updatedAt field before saving
-customerSchema.pre('save', function(next) {
-    this.updatedAt = new Date();
-    next();
-});
+// Method to compare password for login
+customerSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
-// Check if the model already exists before creating it
-export default mongoose.models.Customer || mongoose.model('Customer', customerSchema); 
+export default mongoose.model('Customer', customerSchema); 
