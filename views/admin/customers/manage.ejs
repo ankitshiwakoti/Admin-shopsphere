@@ -73,8 +73,7 @@
                     <th style="width: 50px"></th>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
+                   
                     <th>Joined</th>
                     <th style="width: 100px">Actions</th>
                 </tr>
@@ -101,17 +100,8 @@
                             </div>
                         </td>
                         <td><%= customer.email %></td>
-                        <td><%= customer.phone %></td>
-                        <td>
-                            <span class="badge rounded-pill bg-<%= 
-                                customer.status === 'active' ? 'bg-success text-success' : 
-                                customer.status === 'suspended' ? 'bg-red-inactive text-danger' : 
-                                'bg-unsucess-inactive text-warning' 
-                            %> px-3 py-2">
-                                <i class="fas fa-circle me-1 fs-xs"></i>
-                                <%= customer.status %>
-                            </span>
-                        </td>
+                        
+                        
                         <td>
                             <div class="d-flex flex-column">
                                 <span><%= new Date(customer.createdAt).toLocaleDateString() %></span>

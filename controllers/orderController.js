@@ -213,18 +213,26 @@ export const processRefund = async (req, res) => {
 export const generateInvoice = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('customer', 'name email phone shippingAddress')
-            .populate('products.product', 'name price');
+            .populate({
+                path: 'user',
+                model: 'Customer',
+                select: 'name email phone'
+            })
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                select: 'name price images'
+            });
 
         if (!order) {
             req.flash('error_msg', 'Order not found');
             return res.redirect('/admin/orders');
         }
 
-        // Generate invoice HTML
-        const invoiceHtml = await generateInvoiceTemplate(order);
-
-        res.send(invoiceHtml);
+        res.render('admin/orders/invoice', {
+            order,
+            title: `Invoice #${order.orderNumber}`
+        });
     } catch (error) {
         console.error('Error generating invoice:', error);
         req.flash('error_msg', 'Error generating invoice');

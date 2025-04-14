@@ -778,18 +778,25 @@ function initializeTables() {
             language: {
                 search: '',
                 searchPlaceholder: 'Search...'
-            }
+            },
+            autoWidth: false,
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 },
+                { responsivePriority: 2, targets: -1 }
+            ]
         };
 
         // Destroy existing instances
         ['salesTable', 'inventoryTable', 'customerTable'].forEach(tableId => {
-            const existing = $(`#${tableId}`).DataTable();
+            const table = $(`#${tableId}`);
+            const existing = table.DataTable();
             if (existing) {
                 existing.destroy();
             }
             
-            // Initialize new instance
-            $(`#${tableId}`).DataTable(tableOptions);
+            // Initialize new instance with responsive wrapper
+            table.wrap('<div class="table-responsive"></div>');
+            table.DataTable(tableOptions);
         });
 
     } catch (error) {
@@ -1434,18 +1441,21 @@ function updateTable(tableId, data, columns) {
     overflow-x: auto;
     margin-bottom: 1rem;
     max-height: 400px;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* DataTables fixes */
 .dataTables_wrapper {
     width: 100%;
     margin-bottom: 0;
+    position: relative;
 }
 
 .dataTables_scrollBody {
     max-height: 300px !important;
     overflow-y: auto !important;
     border: none !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 .dataTables_scrollHead {
@@ -1484,6 +1494,24 @@ function updateTable(tableId, data, columns) {
     
     .large-chart {
         height: 250px !important;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: left;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.3em 0.5em;
+        margin: 0 0.1em;
     }
 }
 
