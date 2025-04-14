@@ -38,18 +38,7 @@
                             <th style="width: 30%">Email</th>
                             <td><%= customer.email %></td>
                         </tr>
-                        <tr>
-                            <th>Phone</th>
-                            <td><%= customer.phone %></td>
-                        </tr>
-                        <tr>
-                            <th>Address</th>
-                            <td>
-                                <%= customer.address.street %><br>
-                                <%= customer.address.city %>, <%= customer.address.state %> <%= customer.address.zipCode %><br>
-                                <%= customer.address.country %>
-                            </td>
-                        </tr>
+                       
                         <tr>
                             <th>Joined</th>
                             <td><%= new Date(customer.createdAt).toLocaleDateString() %></td>

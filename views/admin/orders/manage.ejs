@@ -1,16 +1,16 @@
-<%- include('../../partials/messages') %>
 
-<div class="container-fluid py-4 px-4">
+
+<div class="container-fluid py-3 px-3">
     <!-- Page Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">Order Management</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Order Management</li>
-            </ol>
-        </nav>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 mb-2">Order Management</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Order Management</li>
+                </ol>
+            </nav>
         </div>
         
         <div class="d-flex gap-2">
@@ -24,11 +24,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <form id="filterForm" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Search</label>
                     <input type="text" class="form-control" name="search" value="<%= search %>" placeholder="Order number, customer name or email">
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label">Status</label>
                     <select class="form-select" name="status">
                         <option value="">All Statuses</option>
@@ -39,7 +39,7 @@
                         <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Items per page</label>
                     <select class="form-select" name="limit">
                         <option value="10">10</option>
@@ -48,7 +48,7 @@
                         <option value="100">100</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-12 col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
                     <button type="reset" class="btn btn-outline-secondary">Reset</button>
                 </div>
@@ -62,20 +62,20 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th>Order Number</th>
+                        <th class="d-none d-md-table-cell">Order Number</th>
                         <th>Customer</th>
-                        <th>Total Amount</th>
+                        <th class="d-none d-sm-table-cell">Total Amount</th>
                         <th>Status</th>
-                        <th>Payment Status</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th class="d-none d-lg-table-cell">Payment Status</th>
+                        <th class="d-none d-md-table-cell">Date</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (orders && orders.length > 0) { %>
                         <% orders.forEach(order => { %>
                             <tr>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <a href="/admin/orders/<%= order._id %>" class="text-primary fw-semibold">
                                         <%= order.orderNumber %>
                                     </a>
@@ -83,10 +83,15 @@
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="fw-semibold"><%= order.user ? order.user.name : 'N/A' %></span>
-                                        <small class="text-muted"><%= order.user ? order.user.email : 'N/A' %></small>
+                                        <small class="text-muted d-none d-sm-inline"><%= order.user ? order.user.email : 'N/A' %></small>
+                                        <small class="d-md-none">
+                                            <a href="/admin/orders/<%= order._id %>" class="text-primary">
+                                                <%= order.orderNumber %>
+                                            </a>
+                                        </small>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-sm-table-cell">
                                     <span class="fw-semibold">$<%= order.total.toFixed(2) %></span>
                                 </td>
                                 <td>
@@ -99,7 +104,7 @@
                                         <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
                                     </span>
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <span class="badge <%= 
                                         order.orderStatus === 'pending' ? 'bg-warning' :
                                         order.orderStatus === 'processing' ? 'bg-info' :
@@ -110,13 +115,13 @@
                                         <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
                                     </span>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <div class="d-flex flex-column">
                                         <span><%= new Date(order.createdAt).toLocaleDateString() %></span>
                                         <small class="text-muted"><%= new Date(order.createdAt).toLocaleTimeString() %></small>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="dropdown">
                                         <button class="btn btn-icon btn-sm btn-ghost rounded-circle" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
@@ -159,11 +164,11 @@
         <!-- Pagination -->
         <% if (totalPages > 1) { %>
             <div class="card-footer bg-white">
-                <nav class="d-flex justify-content-between align-items-center">
-                    <div class="text-muted">
+                <nav class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                    <div class="text-muted order-2 order-md-1">
                         Showing <%= (currentPage - 1) * itemsPerPage + 1 %> to <%= Math.min(currentPage * itemsPerPage, totalOrders) %> of <%= totalOrders %> orders
                     </div>
-                    <ul class="pagination mb-0">
+                    <ul class="pagination mb-0 order-1 order-md-2">
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                             <a class="page-link" href="?page=<%= currentPage - 1 %>&status=<%= status %>&search=<%= search %>&limit=<%= itemsPerPage %>">
                                 Previous

@@ -702,19 +702,33 @@ function initializeCharts() {
                 datasets: [{
                     data: [0, 0, 0],
                     backgroundColor: [
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(255, 99, 132, 0.2)'
-                    ]
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 206, 86)',
+                        'rgb(255, 99, 132)'
+                    ],
+                    borderWidth: 1
                 }]
             },
             options: {
-                ...chartOptions
+                ...chartOptions,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20
+                        }
+                    }
+                }
             }
         });
     }
 
-    const acquisitionCtx = document.getElementById('customerChart')?.getContext('2d');
+    const acquisitionCtx = document.getElementById('acquisitionChart')?.getContext('2d');
     if (acquisitionCtx) {
         acquisitionChart = new Chart(acquisitionCtx, {
             type: 'line',
@@ -724,11 +738,21 @@ function initializeCharts() {
                     label: 'New Customers',
                     data: [],
                     borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    fill: true
                 }]
             },
             options: {
-                ...chartOptions
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
             }
         });
     }
@@ -754,18 +778,25 @@ function initializeTables() {
             language: {
                 search: '',
                 searchPlaceholder: 'Search...'
-            }
+            },
+            autoWidth: false,
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 },
+                { responsivePriority: 2, targets: -1 }
+            ]
         };
 
         // Destroy existing instances
         ['salesTable', 'inventoryTable', 'customerTable'].forEach(tableId => {
-            const existing = $(`#${tableId}`).DataTable();
+            const table = $(`#${tableId}`);
+            const existing = table.DataTable();
             if (existing) {
                 existing.destroy();
             }
             
-            // Initialize new instance
-            $(`#${tableId}`).DataTable(tableOptions);
+            // Initialize new instance with responsive wrapper
+            table.wrap('<div class="table-responsive"></div>');
+            table.DataTable(tableOptions);
         });
 
     } catch (error) {
@@ -1100,9 +1131,9 @@ function updateInventoryChart(data) {
     try {
         // Update summary statistics
         if (data.summary) {
-            document.getElementById('totalInventoryValue').textContent = `$${(data.summary.totalValue || 0).toFixed(2)}`;
+            document.getElementById('totalInventoryValue').textContent = `$${(data.summary.totalInventoryValue || 0).toFixed(2)}`;
             document.getElementById('lowStockItems').textContent = data.summary.lowStockCount || 0;
-            document.getElementById('averageStockLevel').textContent = (data.summary.averageStock || 0).toFixed(2);
+            document.getElementById('averageStockLevel').textContent = (data.summary.averageStockLevel || 0).toFixed(2);
             document.getElementById('totalProducts').textContent = data.summary.totalProducts || 0;
         }
 
@@ -1156,26 +1187,145 @@ function updateCustomerChart(data) {
         if (data.summary) {
             document.getElementById('totalCustomers').textContent = data.summary.totalCustomers || 0;
             document.getElementById('avgCustomerSpent').textContent = `$${(data.summary.averageSpent || 0).toFixed(2)}`;
-            document.getElementById('avgOrderFrequency').textContent = `${((data.summary.averageOrderFrequency || 0) / (1000 * 60 * 60 * 24)).toFixed(1)} days`;
+            document.getElementById('avgOrderFrequency').textContent = `${((data.summary.averageOrderValue || 0)).toFixed(1)} days`;
         }
 
         // Update customer segments chart
-        if (data.segments && customerSegmentsChart) {
+        if (data.summary && data.summary.segments && customerSegmentsChart) {
+            const segments = data.summary.segments;
             customerSegmentsChart.data.datasets[0].data = [
-                data.segments.highValue || 0,
-                data.segments.mediumValue || 0,
-                data.segments.lowValue || 0
+                segments.highValue || 0,
+                segments.mediumValue || 0,
+                segments.lowValue || 0
             ];
             customerSegmentsChart.update();
         }
 
-        // Update acquisition chart
+        // Update customer acquisition chart
         if (data.acquisitionData && acquisitionChart) {
-            acquisitionChart.data.labels = data.acquisitionData.map(item => 
-                `${item._id.year}-${String(item._id.month).padStart(2, '0')}`
-            );
+            const labels = data.acquisitionData.map(item => {
+                if (item._id && item._id.year && item._id.month) {
+                    return `${item._id.year}-${String(item._id.month).padStart(2, '0')}`;
+                }
+                return 'Unknown';
+            });
+
+            acquisitionChart.data.labels = labels;
             acquisitionChart.data.datasets[0].data = data.acquisitionData.map(item => item.count || 0);
             acquisitionChart.update();
+        }
+
+        // Update main customer chart based on report type
+        const customerChartCtx = document.getElementById('customerChart');
+        if (customerChartCtx && data.customerData) {
+            // Clear previous chart if exists
+            if (window.mainCustomerChart) {
+                window.mainCustomerChart.destroy();
+            }
+
+            let chartData;
+            const reportType = data.reportType || 'purchases';
+            
+            switch (reportType) {
+                case 'purchases':
+                    chartData = {
+                        labels: data.customerData.map(c => c.name || 'Unknown'),
+                        datasets: [{
+                            label: 'Total Spent',
+                            data: data.customerData.map(c => c.totalSpent || 0),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
+                        }]
+                    };
+                    break;
+                case 'activity':
+                    chartData = {
+                        labels: data.customerData.map(c => c.name || 'Unknown'),
+                        datasets: [{
+                            label: 'Order Frequency (days)',
+                            data: data.customerData.map(c => c.daysSinceLastPurchase || 0),
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }]
+                    };
+                    break;
+                case 'demographics':
+                    chartData = {
+                        labels: ['High Value', 'Medium Value', 'Low Value'],
+                        datasets: [{
+                            label: 'Customer Segments',
+                            data: [
+                                data.customerData.filter(c => c.segment === 'High Value').length,
+                                data.customerData.filter(c => c.segment === 'Medium Value').length,
+                                data.customerData.filter(c => c.segment === 'Low Value').length
+                            ],
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(255, 99, 132, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgb(75, 192, 192)',
+                                'rgb(255, 206, 86)',
+                                'rgb(255, 99, 132)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    };
+                    break;
+                case 'retention':
+                    chartData = {
+                        labels: data.customerData.map(c => c.name || 'Unknown'),
+                        datasets: [{
+                            label: 'Days Since Last Purchase',
+                            data: data.customerData.map(c => c.daysSinceLastPurchase || 0),
+                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                            borderColor: 'rgb(153, 102, 255)',
+                            borderWidth: 1
+                        }]
+                    };
+                    break;
+                default:
+                    chartData = {
+                        labels: data.customerData.map(c => c.name || 'Unknown'),
+                        datasets: [{
+                            label: 'Total Orders',
+                            data: data.customerData.map(c => c.totalOrders || 0),
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgb(255, 206, 86)',
+                            borderWidth: 1
+                        }]
+                    };
+            }
+
+            window.mainCustomerChart = new Chart(customerChartCtx, {
+                type: reportType === 'demographics' ? 'pie' : 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: reportType === 'demographics' ? {} : {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (reportType === 'purchases') {
+                                        return '$' + value.toFixed(2);
+                                    }
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // Update customer table
@@ -1189,7 +1339,7 @@ function updateCustomerChart(data) {
                     <td>${customer.totalOrders || 0}</td>
                     <td>$${(customer.totalSpent || 0).toFixed(2)}</td>
                     <td>$${(customer.averageOrderValue || 0).toFixed(2)}</td>
-                    <td>${((customer.orderFrequency || 0) / (1000 * 60 * 60 * 24)).toFixed(1)} days</td>
+                    <td>${customer.daysSinceLastPurchase || 0} days</td>
                     <td>${customer.lastPurchase ? new Date(customer.lastPurchase).toLocaleDateString() : 'Never'}</td>
                 `;
                 tableBody.appendChild(row);
@@ -1291,18 +1441,21 @@ function updateTable(tableId, data, columns) {
     overflow-x: auto;
     margin-bottom: 1rem;
     max-height: 400px;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* DataTables fixes */
 .dataTables_wrapper {
     width: 100%;
     margin-bottom: 0;
+    position: relative;
 }
 
 .dataTables_scrollBody {
     max-height: 300px !important;
     overflow-y: auto !important;
     border: none !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 .dataTables_scrollHead {
@@ -1341,6 +1494,24 @@ function updateTable(tableId, data, columns) {
     
     .large-chart {
         height: 250px !important;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: left;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.3em 0.5em;
+        margin: 0 0.1em;
     }
 }
 

@@ -138,10 +138,10 @@ async function getInitialInventoryData() {
                     from: 'categories',
                     localField: 'category',
                     foreignField: '_id',
-                    as: 'category'
+                    as: 'categoryData'
                 }
             },
-            { $unwind: '$category' },
+            { $unwind: { path: '$categoryData', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: 'orders',
@@ -175,7 +175,12 @@ async function getInitialInventoryData() {
             },
             {
                 $addFields: {
-                    totalValue: { $multiply: ['$price', '$stock'] },
+                    totalValue: { 
+                        $multiply: [
+                            { $ifNull: ['$price', 0] }, 
+                            { $ifNull: ['$stock', 0] }
+                        ]
+                    },
                     totalSold: { 
                         $ifNull: [{ $arrayElemAt: ['$orderStats.totalSold', 0] }, 0]
                     }
@@ -184,41 +189,50 @@ async function getInitialInventoryData() {
             {
                 $project: {
                     name: 1,
-                    stock: 1,
-                    price: 1,
-                    category: '$category.name',
+                    stock: { $ifNull: ['$stock', 0] },
+                    price: { $ifNull: ['$price', 0] },
+                    category: { $ifNull: ['$categoryData.name', 'Uncategorized'] },
                     totalValue: 1,
                     totalSold: 1,
                     status: {
                         $switch: {
                             branches: [
-                                { case: { $lte: ['$stock', 5] }, then: 'Critical' },
-                                { case: { $lte: ['$stock', 10] }, then: 'Low' },
-                                { case: { $lte: ['$stock', 20] }, then: 'Moderate' }
+                                { case: { $lte: [{ $ifNull: ['$stock', 0] }, 5] }, then: 'Critical' },
+                                { case: { $lte: [{ $ifNull: ['$stock', 0] }, 10] }, then: 'Low' },
+                                { case: { $lte: [{ $ifNull: ['$stock', 0] }, 20] }, then: 'Moderate' }
                             ],
                             default: 'Good'
                         }
                     }
                 }
-            },
-            { $sort: { stock: 1 } }
-        ]) || [];
+            }
+        ]);
+
+        // Calculate summary with proper null checks and accurate calculations
+        const summary = {
+            totalInventoryValue: inventoryData.reduce((sum, item) => {
+                const itemValue = (item.price || 0) * (item.stock || 0);
+                return sum + itemValue;
+            }, 0),
+            lowStockCount: inventoryData.filter(item => (item.stock || 0) <= 10).length,
+            averageStockLevel: inventoryData.length > 0 ? 
+                (inventoryData.reduce((sum, item) => sum + (item.stock || 0), 0) / inventoryData.length) : 0,
+            totalProducts: inventoryData.length
+        };
 
         // Get inventory value by category
         const categoryValue = await Product.aggregate([
             {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'category',
-                    foreignField: '_id',
-                    as: 'category'
-                }
-            },
-            { $unwind: '$category' },
-            {
                 $group: {
-                    _id: '$category.name',
-                    totalValue: { $sum: { $multiply: ['$price', '$stock'] } },
+                    _id: '$category',
+                    totalValue: { 
+                        $sum: { 
+                            $multiply: [
+                                { $ifNull: ['$price', 0] }, 
+                                { $ifNull: ['$stock', 0] }
+                            ] 
+                        }
+                    },
                     totalItems: { $sum: 1 },
                     lowStockItems: {
                         $sum: {
@@ -227,17 +241,25 @@ async function getInitialInventoryData() {
                     }
                 }
             },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    name: { $ifNull: ['$category.name', 'Uncategorized'] },
+                    totalValue: 1,
+                    totalItems: 1,
+                    lowStockItems: 1
+                }
+            },
             { $sort: { totalValue: -1 } }
-        ]) || [];
-
-        // Calculate summary with null checks
-        const summary = {
-            totalInventoryValue: inventoryData.reduce((sum, item) => sum + (item.totalValue || 0), 0),
-            lowStockCount: inventoryData.filter(item => (item.stock || 0) <= 10).length,
-            averageStockLevel: inventoryData.length > 0 ? 
-                inventoryData.reduce((sum, item) => sum + (item.stock || 0), 0) / inventoryData.length : 0,
-            totalProducts: inventoryData.length
-        };
+        ]);
 
         return {
             inventoryData,
@@ -592,7 +614,7 @@ export const generateInventoryReport = async (req, res) => {
         // Set category filter
         if (category && category !== 'all') {
             try {
-                matchQuery.category = mongoose.Types.ObjectId(category);
+                matchQuery.category = new mongoose.Types.ObjectId(category);
             } catch (error) {
                 console.error('Invalid category ID:', error);
             }
@@ -625,6 +647,7 @@ export const generateInventoryReport = async (req, res) => {
                 break;
         }
 
+        // Get all products with their sales data
         const inventoryData = await Product.aggregate([
             { $match: matchQuery },
             {
@@ -632,10 +655,10 @@ export const generateInventoryReport = async (req, res) => {
                     from: 'categories',
                     localField: 'category',
                     foreignField: '_id',
-                    as: 'category'
+                    as: 'categoryData'
                 }
             },
-            { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$categoryData', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: 'orders',
@@ -669,7 +692,12 @@ export const generateInventoryReport = async (req, res) => {
             },
             {
                 $addFields: {
-                    totalValue: { $multiply: [{ $ifNull: ['$price', 0] }, { $ifNull: ['$stock', 0] }] },
+                    totalValue: { 
+                        $multiply: [
+                            { $ifNull: ['$price', 0] }, 
+                            { $ifNull: ['$stock', 0] }
+                        ]
+                    },
                     totalSold: { 
                         $ifNull: [{ $arrayElemAt: ['$orderStats.totalSold', 0] }, 0]
                     },
@@ -679,7 +707,7 @@ export const generateInventoryReport = async (req, res) => {
                             then: {
                                 $divide: [
                                     { $ifNull: [{ $arrayElemAt: ['$orderStats.totalSold', 0] }, 0] },
-                                    { $ifNull: ['$stock', 1] }
+                                    { $add: [{ $ifNull: ['$stock', 1] }, 0.001] } // Avoid division by zero
                                 ]
                             },
                             else: 0
@@ -692,7 +720,7 @@ export const generateInventoryReport = async (req, res) => {
                     name: 1,
                     stock: { $ifNull: ['$stock', 0] },
                     price: { $ifNull: ['$price', 0] },
-                    category: { $ifNull: ['$category.name', 'Uncategorized'] },
+                    category: { $ifNull: ['$categoryData.name', 'Uncategorized'] },
                     totalValue: 1,
                     totalSold: 1,
                     turnoverRate: 1,
@@ -709,14 +737,17 @@ export const generateInventoryReport = async (req, res) => {
                 }
             },
             { $sort: sortQuery }
-        ]) || [];
+        ]);
 
-        // Calculate summary with null checks
+        // Calculate accurate summary statistics
         const summary = {
-            totalInventoryValue: inventoryData.reduce((sum, item) => sum + (item.totalValue || 0), 0),
+            totalInventoryValue: inventoryData.reduce((sum, item) => {
+                const itemValue = (item.price || 0) * (item.stock || 0);
+                return sum + itemValue;
+            }, 0),
             lowStockCount: inventoryData.filter(item => (item.stock || 0) <= 10).length,
             averageStockLevel: inventoryData.length > 0 ? 
-                inventoryData.reduce((sum, item) => sum + (item.stock || 0), 0) / inventoryData.length : 0,
+                (inventoryData.reduce((sum, item) => sum + (item.stock || 0), 0) / inventoryData.length) : 0,
             totalProducts: inventoryData.length
         };
 
@@ -731,16 +762,7 @@ export const generateInventoryReport = async (req, res) => {
         console.error('Error generating inventory report:', error);
         res.status(500).json({
             success: false,
-            message: 'Error generating inventory report: ' + error.message,
-            data: {
-                inventoryData: [],
-                summary: {
-                    totalInventoryValue: 0,
-                    lowStockCount: 0,
-                    averageStockLevel: 0,
-                    totalProducts: 0
-                }
-            }
+            message: 'Error generating inventory report: ' + error.message
         });
     }
 };

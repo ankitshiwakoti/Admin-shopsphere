@@ -1,25 +1,26 @@
-<div class="container-fluid">
+
+<div class="container-fluid px-2">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
     </div>
 
     <!-- Content Row -->
-    <div class="row">
+    <div class="row g-2">
         <!-- Products Card -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-left-primary shadow h-100 py-2 dashboard-card stat-card">
+                <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
+                        <div class="col">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Products</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.products %></div>
                             <div class="text-xs text-success mt-2">
                                 <i class="fas fa-box me-1"></i>Total Products
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-box fa-2x text-gray-300"></i>
+                        <div class="col-auto pe-2">
+                            <i class="fas fa-box stat-icon text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -27,19 +28,19 @@
         </div>
 
         <!-- Revenue Card -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-left-success shadow h-100 py-2 dashboard-card stat-card">
+                <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
+                        <div class="col">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Monthly Revenue</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= data.revenue.monthly.toFixed(2) %></div>
                             <div class="text-xs text-success mt-2">
                                 <i class="fas fa-dollar-sign me-1"></i>Today: $<%= data.revenue.today.toFixed(2) %>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        <div class="col-auto pe-2">
+                            <i class="fas fa-dollar-sign stat-icon text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -47,11 +48,11 @@
         </div>
 
         <!-- Orders Card -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-left-info shadow h-100 py-2 dashboard-card stat-card">
+                <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
+                        <div class="col">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Orders</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.orders %></div>
                             <div class="text-xs text-info mt-2">
@@ -59,8 +60,8 @@
                                 <i class="fas fa-clock me-1"></i><%= pendingOrders %> Pending Orders
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        <div class="col-auto pe-2">
+                            <i class="fas fa-shopping-cart stat-icon text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -68,19 +69,19 @@
         </div>
 
         <!-- Customers Card -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-left-warning shadow h-100 py-2 dashboard-card stat-card">
+                <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
+                        <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Customers</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.customers %></div>
                             <div class="text-xs text-warning mt-2">
                                 <i class="fas fa-users me-1"></i>Total Registered
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        <div class="col-auto pe-2">
+                            <i class="fas fa-users stat-icon text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -89,39 +90,39 @@
     </div>
 
     <!-- Content Row -->
-    <div class="row">
+    <div class="row g-2 mt-3">
         <!-- Recent Orders -->
-        <div class="col-xl-7 col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow mb-4 dashboard-card">
+                <div class="card-header py-3 d-flex flex-column flex-md-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
-                    <a href="/admin/orders" class="btn btn-sm btn-primary">View All</a>
+                    <a href="/admin/orders" class="btn btn-sm btn-primary mt-2 mt-md-0">View All</a>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead>
                                 <tr class="bg-light">
-                                    <th class="px-3 py-3">Order ID</th>
-                                    <th class="px-3 py-3">Customer</th>
-                                    <th class="px-3 py-3">Amount</th>
-                                    <th class="px-3 py-3">Status</th>
-                                    <th class="px-3 py-3 text-end">Action</th>
+                                    <th class="px-2 px-sm-3 py-3">Order ID</th>
+                                    <th class="px-2 px-sm-3 py-3 d-none d-md-table-cell">Customer</th>
+                                    <th class="px-2 px-sm-3 py-3">Amount</th>
+                                    <th class="px-2 px-sm-3 py-3">Status</th>
+                                    <th class="px-2 px-sm-3 py-3 text-end">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% if (data.recentOrders && data.recentOrders.length > 0) { %>
                                     <% data.recentOrders.forEach(order => { %>
                                         <tr>
-                                            <td class="px-3 py-3"><%= order.orderNumber %></td>
-                                            <td class="px-3 py-3">
+                                            <td class="px-2 px-sm-3 py-3"><%= order.orderNumber %></td>
+                                            <td class="px-2 px-sm-3 py-3 d-none d-md-table-cell">
                                                 <div class="d-flex flex-column">
                                                     <span class="fw-semibold"><%= order.customer ? order.customer.name : 'N/A' %></span>
                                                     <small class="text-muted"><%= order.customer ? order.customer.email : '' %></small>
                                                 </div>
                                             </td>
-                                            <td class="px-3 py-3">$<%= order.total.toFixed(2) %></td>
-                                            <td class="px-3 py-3">
+                                            <td class="px-2 px-sm-3 py-3">$<%= order.total.toFixed(2) %></td>
+                                            <td class="px-2 px-sm-3 py-3">
                                                 <span class="badge bg-<%= 
                                                     order.status === 'pending' ? 'warning' :
                                                     order.status === 'processing' ? 'info' :
@@ -132,7 +133,7 @@
                                                     <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
                                                 </span>
                                             </td>
-                                            <td class="px-3 py-3 text-end">
+                                            <td class="px-2 px-sm-3 py-3 text-end">
                                                 <a href="/admin/orders/<%= order._id %>" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -152,8 +153,8 @@
         </div>
 
         <!-- Statistics -->
-        <div class="col-xl-5 col-lg-4">
-            <div class="card shadow mb-4">
+        <div class="col-12 col-lg-4">
+            <div class="card shadow mb-4 dashboard-card">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Order Statistics</h6>
                 </div>

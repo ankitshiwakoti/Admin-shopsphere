@@ -4,6 +4,7 @@
         <%= success_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <% delete locals.success_msg %>
 <% } %>
 
 <!-- Error Message -->
@@ -12,6 +13,7 @@
         <%= error_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <% delete locals.error_msg %>
 <% } %>
 
 <!-- Validation Errors -->
@@ -20,4 +22,20 @@
         <%= error %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-<% } %> 
+    <% delete locals.error %>
+<% } %>
+
+<script>
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const closeButton = alert.querySelector('.btn-close');
+            if (closeButton) {
+                closeButton.click();
+            }
+        }, 5000);
+    });
+});
+</script> 
