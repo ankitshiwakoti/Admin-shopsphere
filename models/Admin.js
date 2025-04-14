@@ -32,7 +32,26 @@ const adminSchema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
+    mfaEnabled: {
+        type: Boolean,
+        default: false
+    },
+    mfaSecret: {
+        type: String,
+        default: null
+    },
+    backupCodes: [{
+        code: String,
+        used: {
+            type: Boolean,
+            default: false
+        }
+    }],
     createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     }
@@ -62,6 +81,12 @@ adminSchema.pre('save', async function(next) {
         console.error('Error hashing password:', error);
         next(error);
     }
+});
+
+// Update timestamp before saving
+adminSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
 });
 
 // Method to compare password

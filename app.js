@@ -16,6 +16,7 @@ import roleRoutes from './routes/roleRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
+import authRoutes from './routes/auth.js';
 
 // Import middleware
 import { loadNotifications } from './middleware/notificationMiddleware.js';
@@ -94,6 +95,9 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/customers', customerRoutes);
+
+// Auth routes
+app.use('/admin', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

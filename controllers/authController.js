@@ -1,6 +1,7 @@
 import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import { generateTokens, verifyRefreshToken } from '../config/jwt.js';
+import speakeasy from 'speakeasy';
 
 // Login page
 export const getLogin = (req, res) => {
@@ -13,52 +14,83 @@ export const getLogin = (req, res) => {
 // Handle login
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        console.log('Login attempt with email:', email, 'password length:', password?.length);
+        const { email, password, token } = req.body;
 
-        // Find admin by email
+        // Find admin
         const admin = await Admin.findOne({ email });
         if (!admin) {
-            console.log('Admin not found with email:', email);
             req.flash('error_msg', 'Invalid email or password');
             return res.redirect('/admin/login');
         }
 
-        console.log('Admin found:', admin.email);
-
-        // Compare password
+        // Verify password
         const isMatch = await admin.comparePassword(password);
-        console.log('Password match result:', isMatch);
-
-        if (isMatch) {
-            // Set session
-            req.session.isAdmin = true;
-            req.session.adminId = admin._id;
-            req.session.admin = {
-                id: admin._id,
-                username: admin.username,
-                email: admin.email,
-                role: admin.role
-            };
-            console.log('Session set:', req.session);
-
-            // Save session before redirect
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Error saving session:', err);
-                    req.flash('error_msg', 'Error during login');
-                    return res.redirect('/admin/login');
-                }
-                res.redirect('/admin/dashboard');
-            });
-        } else {
-            console.log('Password does not match');
+        if (!isMatch) {
             req.flash('error_msg', 'Invalid email or password');
-            res.redirect('/admin/login');
+            return res.redirect('/admin/login');
         }
+
+        // Check if MFA is enabled
+        if (admin.mfaEnabled) {
+            if (!token) {
+                // Store credentials temporarily for MFA verification
+                req.session.mfaPending = {
+                    adminId: admin._id,
+                    email: email,
+                    password: password // This is safe as we're storing in session
+                };
+                return res.render('auth/mfa-verify', {
+                    email: email,
+                    password: password
+                });
+            }
+
+            // Verify MFA token
+            const verified = speakeasy.totp.verify({
+                secret: admin.mfaSecret,
+                encoding: 'base32',
+                token: token,
+                window: 1 // Allow 30 seconds window
+            });
+
+            if (!verified) {
+                // Check backup codes
+                const backupCode = admin.backupCodes.find(code => 
+                    code.code === token && !code.used
+                );
+
+                if (!backupCode) {
+                    req.flash('error_msg', 'Invalid authentication code');
+                    return res.render('auth/mfa-verify', {
+                        email: email,
+                        password: password
+                    });
+                }
+
+                // Mark backup code as used
+                backupCode.used = true;
+                await admin.save();
+            }
+        }
+
+        // Clear MFA pending status
+        delete req.session.mfaPending;
+
+        // Set up session
+        req.session.isAdmin = true;
+        req.session.adminId = admin._id;
+        req.session.admin = {
+            id: admin._id,
+            username: admin.username,
+            email: admin.email,
+            role: admin.role
+        };
+
+        req.flash('success_msg', 'You are now logged in');
+        res.redirect('/admin/dashboard');
     } catch (error) {
-        console.error('Error during login:', error);
-        req.flash('error_msg', 'Error during login');
+        console.error('Login error:', error);
+        req.flash('error_msg', 'An error occurred during login');
         res.redirect('/admin/login');
     }
 };
