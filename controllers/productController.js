@@ -41,7 +41,7 @@ export const createProduct = async (req, res) => {
         // Handle image uploads
         if (req.files && req.files.length > 0) {
             productData.images = req.files.map((file, index) => ({
-                url: '/uploads/' + file.filename,
+                url: file.path, // Cloudinary URL
                 isMain: index === 0 // First image is main
             }));
         }
@@ -156,7 +156,7 @@ export const updateProduct = async (req, res) => {
         // Handle image uploads
         if (req.files && req.files.length > 0) {
             updateData.images = req.files.map((file, index) => ({
-                url: '/uploads/' + file.filename,
+                url: file.path, // Cloudinary URL
                 isMain: index === 0 // First image is main
             }));
         }

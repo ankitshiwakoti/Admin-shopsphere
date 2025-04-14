@@ -7,7 +7,7 @@ import { notifyAdmins } from './notificationController.js';
 export const renderOrderManagement = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const itemsPerPage = parseInt(req.query.limit) || 10;
         const status = req.query.status;
         const search = req.query.search;
 
@@ -19,28 +19,38 @@ export const renderOrderManagement = async (req, res) => {
         if (search) {
             query.$or = [
                 { orderNumber: { $regex: search, $options: 'i' } },
-                { 'customer.name': { $regex: search, $options: 'i' } },
-                { 'customer.email': { $regex: search, $options: 'i' } }
+                { 'user.name': { $regex: search, $options: 'i' } },
+                { 'user.email': { $regex: search, $options: 'i' } }
             ];
         }
 
         // Get orders with pagination
         const orders = await Order.find(query)
-            .populate('customer', 'name email')
-            .populate('products.product', 'name price')
+            .populate({
+                path: 'user',
+                model: 'Customer',
+                select: 'name email phone'
+            })
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                select: 'name price images'
+            })
             .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit);
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage);
 
         // Get total count for pagination
         const totalOrders = await Order.countDocuments(query);
+        const totalPages = Math.ceil(totalOrders / itemsPerPage);
 
         res.render('admin/orders/manage', {
             title: 'Order Management',
             orders,
             currentPage: page,
-            totalPages: Math.ceil(totalOrders / limit),
+            totalPages,
             totalOrders,
+            itemsPerPage,
             status,
             search
         });
@@ -55,10 +65,16 @@ export const renderOrderManagement = async (req, res) => {
 export const getOrderDetails = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('customer', 'name email phone')
-            .populate('products.product', 'name price images')
-            .populate('createdBy', 'username')
-            .populate('updatedBy', 'username');
+            .populate({
+                path: 'user',
+                model: 'Customer',
+                select: 'name email phone'
+            })
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                select: 'name price images'
+            });
 
         if (!order) {
             req.flash('error_msg', 'Order not found');
@@ -80,7 +96,7 @@ export const getOrderDetails = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, trackingNumber, estimatedDeliveryDate } = req.body;
+        const { status, orderStatus, trackingNumber } = req.body;
 
         const order = await Order.findById(id);
         if (!order) {
@@ -89,20 +105,15 @@ export const updateOrderStatus = async (req, res) => {
 
         // Update order
         order.status = status;
+        order.orderStatus = orderStatus;
         order.trackingNumber = trackingNumber;
-        order.estimatedDeliveryDate = estimatedDeliveryDate;
-        order.updatedBy = req.session.adminId;
-
-        if (status === 'delivered') {
-            order.actualDeliveryDate = new Date();
-        }
 
         await order.save();
 
         // Create notification
         await notifyAdmins(
             'Order Status Updated',
-            `Order ${order.orderNumber} status updated to ${status}`,
+            `Order ${order.orderNumber} status updated to ${orderStatus}`,
             'info',
             `/admin/orders/${order._id}`,
             req.session.adminId,
@@ -121,7 +132,7 @@ export const updateOrderStatus = async (req, res) => {
 export const cancelOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        const { cancelReason } = req.body;
+        const { notes } = req.body;
 
         const order = await Order.findById(id);
         if (!order) {
@@ -130,11 +141,11 @@ export const cancelOrder = async (req, res) => {
 
         // Update order
         order.status = 'cancelled';
-        order.cancelReason = cancelReason;
-        order.updatedBy = req.session.adminId;
+        order.orderStatus = 'cancelled';
+        order.notes = notes;
 
         // Restore product stock
-        for (const item of order.products) {
+        for (const item of order.items) {
             await Product.findByIdAndUpdate(
                 item.product,
                 { $inc: { stock: item.quantity } }
@@ -240,7 +251,7 @@ export const exportOrders = async (req, res) => {
 
         const orders = await Order.find(query)
             .populate('customer', 'name email')
-            .populate('products.product', 'name price')
+            .populate('items.product', 'name price')
             .sort({ createdAt: -1 });
 
         // Convert orders to CSV format

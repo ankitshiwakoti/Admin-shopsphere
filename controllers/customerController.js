@@ -26,13 +26,46 @@ export const getCustomerDetails = async (req, res) => {
             return res.redirect('/admin/customers');
         }
 
-        const orders = await Order.find({ customer: customer._id })
-            .populate('items.product')
-            .sort({ createdAt: -1 });
+        // Get orders for this specific customer with pagination
+        const page = parseInt(req.query.page) || 1;
+        const itemsPerPage = parseInt(req.query.limit) || 10;
+        const status = req.query.status;
+        const search = req.query.search;
+
+        // Build query
+        let query = { user: customer._id };
+        if (status) {
+            query.status = status;
+        }
+        if (search) {
+            query.$or = [
+                { orderNumber: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const orders = await Order.find(query)
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                select: 'name price images'
+            })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage);
+
+        // Get total count for pagination
+        const totalOrders = await Order.countDocuments(query);
+        const totalPages = Math.ceil(totalOrders / itemsPerPage);
 
         res.render('admin/customers/details', {
             customer,
             orders,
+            currentPage: page,
+            totalPages,
+            totalOrders,
+            itemsPerPage,
+            status,
+            search,
             title: 'Customer Details',
             path: '/admin/customers'
         });

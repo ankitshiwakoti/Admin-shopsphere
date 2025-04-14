@@ -11,6 +11,13 @@ import { upload } from '../middleware/upload.js';
 import * as notificationController from '../controllers/notificationController.js';
 import { getProfile } from '../controllers/activityLogController.js';
 import * as orderController from '../controllers/orderController.js';
+import {
+    getReportsPage,
+    getQuickStats,
+    generateSalesReport,
+    generateInventoryReport,
+    generateCustomerReport
+} from '../controllers/reportController.js';
 
 const router = express.Router();
 
@@ -108,6 +115,13 @@ router.post('/notifications', isAdmin, notificationController.createNotification
 router.put('/notifications/:id/read', isAdmin, notificationController.markAsRead);
 router.put('/notifications/read-all', isAdmin, notificationController.markAllAsRead);
 router.delete('/notifications/:id', isAdmin, notificationController.deleteNotification);
+
+// Reports routes
+router.get('/reports', isAdmin, getReportsPage);
+router.get('/reports/quick-stats', isAdmin, getQuickStats);
+router.post('/reports/sales', isAdmin, generateSalesReport);
+router.post('/reports/inventory', isAdmin, generateInventoryReport);
+router.post('/reports/customers', isAdmin, generateCustomerReport);
 
 // ===== ERROR PAGES =====
 router.get('/unauthorized', protect, authController.getUnauthorized);
