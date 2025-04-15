@@ -7,7 +7,7 @@
             <h1 class="h3 mb-0 text-heading">Category Management</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/dashboard" style="color: var(--color-primary);">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Categories</li>
                 </ol>
             </nav>
@@ -121,7 +121,7 @@
                                     </td>
                                     
                                     <td>
-                                        <a href="/admin/categories/<%= category._id %>/view" class="btn btn-sm btn-icon btn-outline-view view-category" title="View Category">
+                                        <a href="/admin/categories/<%= category._id %>/view" class="btn btn-sm btn-icon btn-outline-view" title="View Category">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="/admin/categories/<%= category._id %>/edit" class="btn btn-sm btn-icon btn-outline-edit" title="Edit Category">
@@ -514,53 +514,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-.btn-icon {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    margin-right: 4px;
-}
-
-.btn-outline-view {
-    color: #0dcaf0;
-    border-color: #0dcaf0;
-}
-
-.btn-outline-view:hover {
-    color: #fff;
-    background-color: #0dcaf0;
-    border-color: #0dcaf0;
-}
-
-.btn-outline-edit {
-    color: #198754;
-    border-color: #198754;
-}
-
-.btn-outline-edit:hover {
-    color: #fff;
-    background-color: #198754;
-    border-color: #198754;
-}
-
-.btn-outline-delete {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-
-.btn-outline-delete:hover {
-    color: #fff;
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.bg-unsucess-inactive {
-    background-color: #6c757d !important;
-}
-</style>
 

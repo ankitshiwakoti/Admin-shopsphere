@@ -96,11 +96,32 @@
 </head>
 <body>
     <div class="container-fluid px-2 px-md-3 py-3">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Invoice</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard" style="color: var(--color-primary);">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/orders" style="color: var(--color-primary);">Orders</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Order #<%= order.orderNumber %></li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
         <div class="invoice-container p-3 p-md-4">
             <!-- Invoice Header -->
             <div class="invoice-header row g-3 mb-4 pb-3 border-bottom">
                 <div class="col-12 col-md-6">
-                    <h1 class="h3 mb-2">ShopSphere</h1>
+                    <div class="d-flex align-items-center">
+                        <!-- <div class="logo-icon me-2">
+                            <img src="/images/logo.svg" alt="ShopSphere" height="24">
+                        </div> -->
+                        <h2>
+                        <span class="logo-text">shop<span style="color: var(--color-primary);">sphere</span></span>
+                    </h2>
+                    </div>
+                        
                     <div class="text-muted small">
                         <div>123 Commerce Street</div>
                         <div>Business City, ST 12345</div>
@@ -113,13 +134,13 @@
                     <div class="text-muted small">
                         <div>Invoice #: <%= order.orderNumber %></div>
                         <div>Date: <%= new Date(order.createdAt).toLocaleDateString() %></div>
-                        <div class="mt-1">
+                        <div class="mt-3">
                             Status: 
-                            <span class="badge bg-<%= 
-                                order.status === 'pending' ? 'warning' :
-                                order.status === 'processing' ? 'info' :
-                                order.status === 'completed' ? 'success' :
-                                'danger'
+                            <span class="badge <%= 
+                                order.status === 'pending' ? 'bg-pending' :
+                                order.status === 'processing' ? 'bg-processing' :
+                                order.status === 'completed' ? 'bg-completed' :
+                                'bg-cancelled'
                             %>">
                                 <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
                             </span>
@@ -136,17 +157,19 @@
                             <h3 class="h6 mb-0">Bill To</h3>
                         </div>
                         <div class="card-body">
-                            <div class="fw-bold mb-2"><%= order.user.name %></div>
-                            <address class="mb-0 small">
-                                <%= order.shippingAddress.street %><br>
+                            <div class="fw-bold mb-0"> <i class="fas fa-user me-2 text-muted"></i><%= order.user.name %></div>
+                            <address class=" mb-0 small"> 
+                                <div class="d-flex align-items-center">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i> <%= order.shippingAddress.street %><br>
                                 <% if (order.shippingAddress.street2) { %>
                                     <%= order.shippingAddress.street2 %><br>
                                 <% } %>
-                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipCode %><br>
+                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %>, <%= order.shippingAddress.zipCode %><br>
                                 <%= order.shippingAddress.country %><br>
+                                </div>
                                 <div class="mt-2">
-                                    <i class="fas fa-envelope me-2"></i><%= order.user.email %><br>
-                                    <i class="fas fa-phone me-2"></i><%= order.user.phone %>
+                                    <i class="fas fa-envelope me-2 text-muted"></i><%= order.user.email %><br>
+                                    <i class="fas fa-phone me-2 text-muted"></i><%= order.user.phone %>
                                 </div>
                             </address>
                         </div>
@@ -158,14 +181,16 @@
                             <h3 class="h6 mb-0">Ship To</h3>
                         </div>
                         <div class="card-body">
-                            <div class="fw-bold mb-2"><%= order.user.name %></div>
-                            <address class="mb-0 small">
-                                <%= order.shippingAddress.street %><br>
+                            <div class="fw-bold mb-0"> <i class="fas fa-user me-2 text-muted"></i><%= order.user.name %></div>
+                            <address class="mb-0 small"> 
+                                <div class="d-flex align-items-center">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i> <%= order.shippingAddress.street %><br>
                                 <% if (order.shippingAddress.street2) { %>
                                     <%= order.shippingAddress.street2 %><br>
                                 <% } %>
-                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipCode %><br>
+                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %>, <%= order.shippingAddress.zipCode %><br>
                                 <%= order.shippingAddress.country %>
+                                </div>
                             </address>
                         </div>
                     </div>
@@ -236,10 +261,10 @@
                         </div>
                         <div class="col-12 col-sm-4">
                             <div class="text-muted small">Payment Status</div>
-                            <span class="badge bg-<%= 
-                                order.paymentStatus === 'paid' ? 'success' :
-                                order.paymentStatus === 'pending' ? 'warning' :
-                                'danger'
+                            <span class="badge <%= 
+                                order.paymentStatus === 'paid' ? 'bg-paid' :
+                                order.paymentStatus === 'pending' ? 'bg-pending' :
+                                'bg-completed'
                             %>">
                                 <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
                             </span>
@@ -259,14 +284,14 @@
                 <p class="text-muted mb-1">Thank you for your business!</p>
                 <p class="text-muted small mb-0">
                     For any questions about this invoice, please contact<br>
-                    <i class="fas fa-envelope me-1"></i>support@shopsphere.com or 
+                    <i class="fas fa-envelope me-1"></i>support@shopsphere.com or <br>
                     <i class="fas fa-phone me-1"></i>(555) 123-4567
                 </p>
             </div>
 
             <!-- Print Button -->
             <div class="no-print text-center mt-4">
-                <button onclick="window.print()" class="btn btn-primary btn-sm px-4">
+                <button onclick="window.print()" class="btn btn-primary btn-sm px-4" style="background-color: var(--color-primary); border-color: var(--color-primary);">
                     <i class="fas fa-print me-2"></i>Print Invoice
                 </button>
             </div>

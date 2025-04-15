@@ -9,18 +9,18 @@
     <div class="row g-2">
         <!-- Products Card -->
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card border-left-primary shadow h-100 py-2 dashboard-card stat-card">
+            <div class="card border-left-primary shadow h-100  px-2 py-2 dashboard-card stat-card">
                 <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Products</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.products %></div>
-                            <div class="text-xs text-success mt-2">
+                            <div class="text-xs text-body-light mt-2">
                                 <i class="fas fa-box me-1"></i>Total Products
                             </div>
                         </div>
                         <div class="col-auto pe-2">
-                            <i class="fas fa-box stat-icon text-gray-300"></i>
+                            <i class="fas fa-box stat-icon text-gray-300" style="color: var(--color-primary);"></i>
                         </div>
                     </div>
                 </div>
@@ -35,12 +35,12 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Monthly Revenue</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= data.revenue.monthly.toFixed(2) %></div>
-                            <div class="text-xs text-success mt-2">
+                            <div class="text-xs text-body-light mt-2">
                                 <i class="fas fa-dollar-sign me-1"></i>Today: $<%= data.revenue.today.toFixed(2) %>
                             </div>
                         </div>
                         <div class="col-auto pe-2">
-                            <i class="fas fa-dollar-sign stat-icon text-gray-300"></i>
+                            <i class="fas fa-dollar-sign stat-icon text-gray-300" style="color: var(--color-success);"></i>
                         </div>
                     </div>
                 </div>
@@ -53,15 +53,15 @@
                 <div class="card-body px-2 px-sm-3">
                     <div class="row no-gutters align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Orders</div>
+                            <div class="text-xs font-weight-bold  text-uppercase mb-1" style="color: #0b49ae;">Orders</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.orders %></div>
-                            <div class="text-xs text-info mt-2">
+                            <div class="text-xs text-body-light mt-2">
                                 <% const pendingOrders = data.charts.orderStatus.find(s => s._id === 'pending')?.count || 0 %>
                                 <i class="fas fa-clock me-1"></i><%= pendingOrders %> Pending Orders
                             </div>
                         </div>
                         <div class="col-auto pe-2">
-                            <i class="fas fa-shopping-cart stat-icon text-gray-300"></i>
+                            <i class="fas fa-shopping-cart stat-icon text-gray-300" style="color: #0b49ae;"></i>
                         </div>
                     </div>
                 </div>
@@ -76,12 +76,12 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Customers</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><%= data.counts.customers %></div>
-                            <div class="text-xs text-warning mt-2">
+                            <div class="text-xs text-body-light mt-2">
                                 <i class="fas fa-users me-1"></i>Total Registered
                             </div>
                         </div>
                         <div class="col-auto pe-2">
-                            <i class="fas fa-users stat-icon text-gray-300"></i>
+                            <i class="fas fa-users stat-icon text-warning-300" style="color: var(--color-warning);"></i>
                         </div>
                     </div>
                 </div>
@@ -117,26 +117,38 @@
                                             <td class="px-2 px-sm-3 py-3"><%= order.orderNumber %></td>
                                             <td class="px-2 px-sm-3 py-3 d-none d-md-table-cell">
                                                 <div class="d-flex flex-column">
-                                                    <span class="fw-semibold"><%= order.customer ? order.customer.name : 'N/A' %></span>
-                                                    <small class="text-muted"><%= order.customer ? order.customer.email : '' %></small>
+                                                    <span class="fw-semibold"><%= order.user ? order.user.name : 'N/A' %></span>
+                                                    <small class="text-muted"><%= order.user ? order.user.email : '' %></small>
                                                 </div>
                                             </td>
                                             <td class="px-2 px-sm-3 py-3">$<%= order.total.toFixed(2) %></td>
                                             <td class="px-2 px-sm-3 py-3">
-                                                <span class="badge bg-<%= 
-                                                    order.status === 'pending' ? 'warning' :
-                                                    order.status === 'processing' ? 'info' :
-                                                    order.status === 'shipped' ? 'primary' :
-                                                    order.status === 'delivered' ? 'success' :
-                                                    'danger'
+                                                <span class="badge <%= 
+                                                    order.status === 'pending' ? 'bg-pending' :
+                                                    order.status === 'processing' ? 'bg-processing' :
+                                                    order.status === 'shipped' ? 'bg-shipped' :
+                                                    order.status === 'delivered' ? 'bg-delivered' :
+                                                    'bg-completed'
                                                 %>">
                                                     <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
                                                 </span>
                                             </td>
-                                            <td class="px-2 px-sm-3 py-3 text-end">
-                                                <a href="/admin/orders/<%= order._id %>" class="btn btn-sm btn-outline-primary">
+                                            <td class="text-end">
+                                                <!-- <a href="/admin/orders/<%= order._id %>" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
-                                                </a>
+                                                </a> -->
+                                                <div class="dropdown">
+                                                    <button class="btn btn-icon btn-sm btn-ghost rounded-circle" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item" href="/admin/orders/<%= order._id %>">
+                                                                <i class="fas fa-eye me-2"></i>View Details
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     <% }); %>
@@ -168,12 +180,12 @@
                                     <span class="small font-weight-bold"><%= status.count %> orders</span>
                                 </div>
                                 <div class="progress" style="height: 5px;">
-                                    <div class="progress-bar bg-<%= 
-                                        status._id === 'pending' ? 'warning' :
-                                        status._id === 'processing' ? 'info' :
-                                        status._id === 'shipped' ? 'primary' :
-                                        status._id === 'delivered' ? 'success' :
-                                        'danger'
+                                    <div class="progress-bar <%= 
+                                        status._id === 'pending' ? 'bg-orange' :
+                                        status._id === 'processing' ? 'bg-primary' :
+                                        status._id === 'shipped' ? 'bg-blue' :
+                                        status._id === 'delivered' ? 'bg-green' :
+                                        'bg-danger'
                                     %>" role="progressbar" style="width: <%= (status.count / data.counts.orders * 100).toFixed(1) %>%"></div>
                                 </div>
                             </div>
@@ -196,7 +208,7 @@
                                         <tr>
                                             <td><%= product.name %></td>
                                             <td>
-                                                <span class="badge bg-<%= product.stock < 5 ? 'danger' : 'warning' %>">
+                                                <span class="badge <%= product.stock < 5 ? 'bg-outofstock' : 'bg-lowstock' %>">
                                                     <%= product.stock %>
                                                 </span>
                                             </td>

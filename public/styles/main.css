@@ -184,6 +184,8 @@ h5, .h5 {
     color: var(--color-body-light);
 }
 
+
+
 /* Buttons
    ========================================================================== */
 .btn {
@@ -498,13 +500,33 @@ h5, .h5 {
 .text-error { color: var(--color-error) !important; }
 
 .badge {
-    padding: 6px 12px;
-    font-weight: 500;
-    font-size: 12px;
-    border-radius: 16px;
+    padding: 6px 12px !important; 
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    border-radius: 16px !important;
 }
 
 .bg-primary { background-color: var(--color-primary) !important; }
+
+.bg-green{
+    background-color: var(--color-success) !important;
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+    font-size: 0.875rem;
+}
+
+.bg-blue{
+    background-color: #1566e7;
+    border: 1px solid #1566e7;
+    color: white;
+    font-size: 0.875rem;
+}
+.bg-orange{
+    background-color: #ffa500;
+    border: 1px solid #ffa500;
+    color: white;
+    font-size: 0.875rem;
+}
 
 .bg-primary-badge { background-color: rgb(111, 72, 235, 0.1) !important;
     border: 1px solid var(--color-primary);
@@ -590,6 +612,60 @@ h5, .h5 {
     color: var(--color-error);
     font-size: 0.875rem;
 }
+
+/* Order Status Badges */
+.bg-pending{
+    background-color: rgba(247, 144, 9, 0.1) !important;
+    border: 1px solid var(--color-error) !important;
+    color: var(--color-error) !important;
+    font-size: 0.875rem !important;
+}
+
+.bg-processing{
+    background-color: rgb(111, 72, 235, 0.1) !important;
+    border: 1px solid var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    font-size: 0.875rem !important;
+}
+
+.bg-completed{
+    background-color: rgba(18, 183, 106, 0.1) !important;
+    border: 1px solid var(--color-success) !important;
+    color: var(--color-success) !important;
+    font-size: 0.875rem !important;
+}
+.bg-shipped{
+    background-color: rgb(59, 130, 246, 0.1) !important;
+    border: 1px solid #3B82F6 !important;
+    color: #3B82F6 !important;
+    font-size: 0.875rem !important;
+}
+
+.bg-delivered{
+    background-color: rgba(18, 183, 106, 0.1) !important;
+    border: 1px solid var(--color-success) !important;
+    color: var(--color-success) !important;
+    font-size: 0.875rem !important;
+}
+.bg-cancelled{
+    background-color: rgba(217, 45, 32, 0.1) !important;
+    border: 1px solid var(--color-warning) !important;
+    color: var(--color-warning) !important;
+    font-size: 0.875rem !important;
+}
+.bg-paid{
+    background-color: rgba(18, 183, 106, 0.1) !important;
+    border: 1px solid var(--color-success) !important;
+    color: var(--color-success) !important;
+    font-size: 0.875rem !important;
+}
+.bg-refunded{
+    background-color: rgba(247, 144, 9, 0.1) !important;
+    border: 1px solid var(--color-error) !important;
+    color: var(--color-error) !important;
+    font-size: 0.875rem !important;
+}
+
 /* Responsive Styles
    ========================================================================== */
 /* Mobile devices (< 576px) */
