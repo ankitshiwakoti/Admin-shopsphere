@@ -11,7 +11,7 @@
             <h1 class="h3 mb-0 text-heading">Reports & Analytics</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/dashboard" style="color: var(--color-primary);">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Reports</li>
                 </ol>
             </nav>
@@ -20,7 +20,7 @@
             <button class="btn btn-outline-primary" onclick="refreshAllReports()">
                 <i class="bi bi-arrow-clockwise me-2"></i>Refresh All
             </button>
-            <button class="btn btn-primary" onclick="scheduleReport()">
+            <button class="btn btn-outline-primary" onclick="scheduleReport()">
                 <i class="bi bi-clock-history me-2"></i>Schedule Report
             </button>
         </div>
@@ -33,7 +33,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="stats-icon bg-primary">
+                            <div class="stats-icon bg-primary" style="border: 1px solid var(--color-primary-hover);">
                                 <i class="bi bi-currency-dollar text-white"></i>
                             </div>
                         </div>
@@ -51,7 +51,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="stats-icon bg-success">
+                            <div class="stats-icon bg-green">
                                 <i class="bi bi-bag-check text-white"></i>
                             </div>
                         </div>
@@ -69,11 +69,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="stats-icon bg-warning">
+                            <div class="stats-icon bg-error">
                                 <i class="bi bi-box text-white"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div class="flex-grow-1 ms-3 text-heading">
                             <h6 class="mb-0">Low Stock Items</h6>
                             <h3 class="mb-0" id="lowStockCount">0</h3>
                             <small class="text-muted">Items below threshold</small>
@@ -87,7 +87,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="stats-icon bg-info">
+                            <div class="stats-icon bg-blue">
                                 <i class="bi bi-people text-white"></i>
                             </div>
                         </div>
@@ -172,7 +172,7 @@
                                 <div class="col-md-6">
                                     <div class="card border-0 mb-4">
                                         <div class="card-body">
-                                            <h5 class="card-title">Sales by Category</h5>
+                                            <h5 class="card-title text-heading">Sales by Category</h5>
                                             <canvas id="categorySalesChart" height="200"></canvas>
                                         </div>
                                     </div>
@@ -284,7 +284,7 @@
                                                 <option value="turnover">Turnover Rate</option>
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-success w-100">
+                                        <button type="submit" class="btn btn-primary w-100">
                                             Generate Report
                                         </button>
                                     </form>
@@ -403,7 +403,7 @@
                                                 <option value="recency">Last Purchase</option>
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-info w-100 text-white">
+                                        <button type="submit" class="btn btn-primary w-100 text-white">
                                             Generate Report
                                         </button>
                                     </form>
@@ -1536,8 +1536,8 @@ function updateTable(tableId, data, columns) {
 }
 
 .nav-tabs .nav-link.active {
-    color: #0d6efd;
-    border-bottom: 2px solid #0d6efd;
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
     background: none;
 }
 

@@ -5,8 +5,8 @@
             <h1 class="h3 mb-0 text-heading">Customer Details</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="/admin/customers">Customers</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/dashboard" style="color: var(--color-primary);">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/customers" style="color: var(--color-primary);">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Customer Details</li>
                 </ol>
             </nav>
@@ -14,50 +14,68 @@
     </div>
 
     <!-- Customer Information Card -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3 class="card-title">Customer Information</h3>
-            <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                </button>
-            </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h3 class="card-title mb-0 text-heading">Customer Information</h3>
         </div>
         <div class="card-body">
-            <div class="row">
+            <div class="row g-4">
+                <!-- Customer Avatar & Basic Info -->
                 <div class="col-md-3 text-center">
-                    <img class="img-fluid rounded-circle mb-3" src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(customer.name) %>&background=random" alt="Customer Avatar">
-                    <h4><%= customer.name %></h4>
-                    <span class="badge badge-<%= customer.status === 'active' ? 'success' : customer.status === 'inactive' ? 'warning' : 'danger' %>">
-                        <%= customer.status %>
+                    <div class="avatar avatar-xl mb-3">
+                        <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(customer.name) %>&background=random" 
+                             alt="<%= customer.name %>" 
+                             class="rounded-circle">
+                    </div>
+                    <h4 class="mb-2"><%= customer.name %></h4>
+                    
+                      
                     </span>
                 </div>
+
+                <!-- Customer Details -->
                 <div class="col-md-9">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th style="width: 30%">Email</th>
-                            <td><%= customer.email %></td>
-                        </tr>
-                       
-                        <tr>
-                            <th>Joined</th>
-                            <td><%= new Date(customer.createdAt).toLocaleDateString() %></td>
-                        </tr>
-                        <tr>
-                            <th>Last Updated</th>
-                            <td><%= new Date(customer.updatedAt).toLocaleDateString() %></td>
-                        </tr>
-                    </table>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-<%= customer.status === 'active' ? 'warning' : 'success' %> status-toggle" 
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex flex-column">
+                                <span class="text-muted small mb-1">Email</span>
+                                <span class="fw-semibold"><%= customer.email %></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex flex-column">
+                                <span class="text-muted small mb-1">Phone</span>
+                                <span class="fw-semibold"><%= customer.phone || 'Not provided' %></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex flex-column">
+                                <span class="text-muted small mb-1">Joined Date</span>
+                                <span class="fw-semibold"><%= new Date(customer.createdAt).toLocaleDateString() %></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex flex-column">
+                                <span class="text-muted small mb-1">Last Updated</span>
+                                <span class="fw-semibold"><%= new Date(customer.updatedAt).toLocaleDateString() %></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" 
+                                class="btn <%= customer.status === 'active' ? 'btn-warning' : 'btn-success' %> status-toggle" 
                                 data-id="<%= customer._id %>" 
                                 data-status="<%= customer.status === 'active' ? 'inactive' : 'active' %>"
                                 title="<%= customer.status === 'active' ? 'Deactivate' : 'Activate' %> Customer">
-                            <i class="fas fa-<%= customer.status === 'active' ? 'ban' : 'check' %>"></i>
+                            <i class="fas fa-<%= customer.status === 'active' ? 'ban' : 'check' %> me-2"></i>
                             <%= customer.status === 'active' ? 'Deactivate' : 'Activate' %>
                         </button>
-                        <button type="button" class="btn btn-danger" onclick="confirmDelete('<%= customer._id %>', '<%= customer.name %>')">
-                            <i class="fas fa-trash"></i> Delete
+                        <button type="button" 
+                                class="btn btn-danger" 
+                                onclick="confirmDelete('<%= customer._id %>', '<%= customer.name %>')">
+                            <i class="fas fa-trash me-2"></i>Delete
                         </button>
                     </div>
                 </div>
@@ -68,15 +86,15 @@
     <!-- Orders Table -->
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Order History</h3>
-            <div class="card-tools">
+            <h3 class="card-title mb-3 mt-2">Order History</h3>
+            <div class="card-tools mb-3">
                 <form class="row g-3" action="" method="GET">
                     <div class="col-md-4">
                         <input type="text" class="form-control" name="search" value="<%= search %>" placeholder="Search orders...">
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" name="status">
-                            <option value="">All Statuses</option>
+                            <option value="">All Status</option>
                             <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
                             <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>Processing</option>
                             <option value="shipped" <%= status === 'shipped' ? 'selected' : '' %>>Shipped</option>
@@ -94,7 +112,7 @@
                     </div>
                     <div class="col-md-3">
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
-                        <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
                     </div>
                 </form>
             </div>
@@ -131,21 +149,21 @@
                                 </td>
                                 <td>
                                     <span class="badge <%= 
-                                        order.status === 'pending' ? 'bg-warning' :
-                                        order.status === 'processing' ? 'bg-info' :
-                                        order.status === 'completed' ? 'bg-success' :
-                                        'bg-danger'
+                                        order.status === 'pending' ? 'bg-pending' :
+                                        order.status === 'processing' ? 'bg-processing' :
+                                        order.status === 'completed' ? 'bg-completed' :
+                                        'bg-cancelled'
                                     %>">
                                         <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
                                     </span>
                                 </td>
                                 <td>
                                     <span class="badge <%= 
-                                        order.orderStatus === 'pending' ? 'bg-warning' :
-                                        order.orderStatus === 'processing' ? 'bg-info' :
-                                        order.orderStatus === 'shipped' ? 'bg-primary' :
-                                        order.orderStatus === 'delivered' ? 'bg-success' :
-                                        'bg-danger'
+                                        order.orderStatus === 'pending' ? 'bg-pending' :
+                                        order.orderStatus === 'processing' ? 'bg-processing' :
+                                        order.orderStatus === 'shipped' ? 'bg-shipped' :
+                                        order.orderStatus === 'delivered' ? 'bg-delivered' :
+                                        'bg-cancelled'
                                     %>">
                                         <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
                                     </span>
@@ -200,7 +218,7 @@
                     <ul class="pagination mb-0">
                         <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                             <a class="page-link" href="?page=<%= currentPage - 1 %>&status=<%= status %>&search=<%= search %>&limit=<%= itemsPerPage %>">
-                                Previous
+                                <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
                         <% for(let i = 1; i <= totalPages; i++) { %>
@@ -212,7 +230,7 @@
                         <% } %>
                         <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                             <a class="page-link" href="?page=<%= currentPage + 1 %>&status=<%= status %>&search=<%= search %>&limit=<%= itemsPerPage %>">
-                                Next
+                                <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
                     </ul>
