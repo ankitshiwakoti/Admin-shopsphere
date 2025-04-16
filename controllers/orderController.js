@@ -19,8 +19,14 @@ export const renderOrderManagement = async (req, res) => {
         if (search) {
             query.$or = [
                 { orderNumber: { $regex: search, $options: 'i' } },
-                { 'user.name': { $regex: search, $options: 'i' } },
-                { 'user.email': { $regex: search, $options: 'i' } }
+                { 'user': { 
+                    $in: await Customer.find({ 
+                        $or: [
+                            { name: { $regex: search, $options: 'i' } },
+                            { email: { $regex: search, $options: 'i' } }
+                        ]
+                    }).distinct('_id')
+                }}
             ];
         }
 

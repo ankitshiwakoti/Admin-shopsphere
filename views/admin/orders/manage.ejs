@@ -43,10 +43,10 @@
                 <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Items per page</label>
                     <select class="form-select" name="limit">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
+                        <option value="10" <%= itemsPerPage === 10 ? 'selected' : '' %>>10</option>
+                        <option value="25" <%= itemsPerPage === 25 ? 'selected' : '' %>>25</option>
+                        <option value="50" <%= itemsPerPage === 50 ? 'selected' : '' %>>50</option>
+                        <option value="100" <%= itemsPerPage === 100 ? 'selected' : '' %>>100</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-3 d-flex align-items-end">
@@ -66,8 +66,8 @@
                         <th class="d-none d-md-table-cell">Order Number</th>
                         <th>Customer</th>
                         <th class="d-none d-sm-table-cell">Total Amount</th>
-                        <th>Status</th>
-                        <th class="d-none d-lg-table-cell">Payment Status</th>
+                        <th>Payment Status</th>
+                        <th class="d-none d-lg-table-cell">Order Status</th>
                         <th class="d-none d-md-table-cell">Date</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -262,7 +262,18 @@
     document.getElementById('filterForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        const params = new URLSearchParams(formData);
+        const params = new URLSearchParams();
+        
+        // Add each form value to params, ensuring proper encoding
+        for (let [key, value] of formData.entries()) {
+            if (value) { // Only add non-empty values
+                params.append(key, value.trim());
+            }
+        }
+        
+        // Reset to page 1 when filtering
+        params.append('page', '1');
+        
         window.location.href = `/admin/orders?${params.toString()}`;
     });
 
