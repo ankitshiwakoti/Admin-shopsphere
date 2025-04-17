@@ -7,7 +7,9 @@ import speakeasy from 'speakeasy';
 export const getLogin = (req, res) => {
     res.render('admin/login', {
         title: 'Admin Login',
-        path: '/admin/login'
+        path: '/admin/login',
+        formData: req.session.formData || {},
+        errors: req.flash('error_msg')
     });
 };
 
@@ -15,6 +17,9 @@ export const getLogin = (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password, token } = req.body;
+
+        // Store form data in session
+        req.session.formData = { email };
 
         // Find admin
         const admin = await Admin.findOne({ email });
@@ -29,6 +34,9 @@ export const login = async (req, res) => {
             req.flash('error_msg', 'Invalid email or password');
             return res.redirect('/admin/login');
         }
+
+        // Clear form data from session on successful login
+        delete req.session.formData;
 
         // Check if MFA is enabled
         if (admin.mfaEnabled) {
